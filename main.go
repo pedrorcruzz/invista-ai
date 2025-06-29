@@ -231,11 +231,11 @@ func mostrarResumoVertical(dados Dados) {
 }
 
 func adicionarOuEditarMes(dados *Dados, scanner *bufio.Scanner) {
-	fmt.Print("Digite o ano: ")
+	fmt.Print("Digite o ano(YYYY): ")
 	scanner.Scan()
 	ano := scanner.Text()
 
-	fmt.Print("Digite o mês: ")
+	fmt.Print("Digite o mês(MM): ")
 	scanner.Scan()
 	mes := scanner.Text()
 
