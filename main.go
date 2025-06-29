@@ -92,6 +92,15 @@ func nomeMes(m string) string {
 	return nomes[m]
 }
 
+func ordenarChaves[T any](m map[string]T) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
 func mostrarResumoHorizontal(dados Dados) {
 	fmt.Println("\n📌 Resumo dos aportes e saldos mensais (Tabela Horizontal)")
 
@@ -221,23 +230,91 @@ func mostrarResumoVertical(dados Dados) {
 	fmt.Printf("Lucros retirados: R$ %.2f\n", lucrosRetiradosTotal)
 }
 
-func ordenarChaves[T any](m map[string]T) []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	return keys
-}
-
 func adicionarOuEditarMes(dados *Dados, scanner *bufio.Scanner) {
-	fmt.Print("Digite o ano (ex: 2025): ")
+	fmt.Print("Digite o ano: ")
 	scanner.Scan()
 	ano := scanner.Text()
 
-	fmt.Print("Digite o mês (ex: 05): ")
+	fmt.Print("Digite o mês: ")
 	scanner.Scan()
 	mes := scanner.Text()
+
+	if dados.Anos[ano] == nil {
+		dados.Anos[ano] = make(Ano)
+	}
+
+	m := dados.Anos[ano][mes]
+	if m != (Mes{}) {
+		for {
+			fmt.Println("\n--- EDITAR CAMPOS ---")
+			fmt.Printf("1. Aporte RF (atual: %.2f)\n", m.AporteRF)
+			fmt.Printf("2. Aporte FIIs (atual: %.2f)\n", m.AporteFIIs)
+			fmt.Printf("3. Saída (atual: %.2f)\n", m.Saida)
+			fmt.Printf("4. Valor Bruto RF (atual: %.2f)\n", m.ValorBrutoRF)
+			fmt.Printf("5. Valor Líquido RF (atual: %.2f)\n", m.ValorLiquidoRF)
+			fmt.Printf("6. Valor Líquido FIIs (atual: %.2f)\n", m.ValorLiquidoFIIs)
+			fmt.Printf("7. Lucro Retirado (atual: %.2f)\n", m.LucroRetirado)
+			fmt.Println("8. Alterar mês e ano")
+			fmt.Println("0. Sair da edição")
+			fmt.Print("Escolha: ")
+			scanner.Scan()
+			opcao := scanner.Text()
+
+			switch opcao {
+			case "1":
+				fmt.Print("Novo valor: ")
+				scanner.Scan()
+				m.AporteRF, _ = strconv.ParseFloat(scanner.Text(), 64)
+			case "2":
+				fmt.Print("Novo valor: ")
+				scanner.Scan()
+				m.AporteFIIs, _ = strconv.ParseFloat(scanner.Text(), 64)
+			case "3":
+				fmt.Print("Novo valor: ")
+				scanner.Scan()
+				m.Saida, _ = strconv.ParseFloat(scanner.Text(), 64)
+			case "4":
+				fmt.Print("Novo valor: ")
+				scanner.Scan()
+				m.ValorBrutoRF, _ = strconv.ParseFloat(scanner.Text(), 64)
+			case "5":
+				fmt.Print("Novo valor: ")
+				scanner.Scan()
+				m.ValorLiquidoRF, _ = strconv.ParseFloat(scanner.Text(), 64)
+			case "6":
+				fmt.Print("Novo valor: ")
+				scanner.Scan()
+				m.ValorLiquidoFIIs, _ = strconv.ParseFloat(scanner.Text(), 64)
+			case "7":
+				fmt.Print("Novo valor: ")
+				scanner.Scan()
+				m.LucroRetirado, _ = strconv.ParseFloat(scanner.Text(), 64)
+			case "8":
+				fmt.Print("Novo ano: ")
+				scanner.Scan()
+				novoAno := scanner.Text()
+				fmt.Print("Novo mês: ")
+				scanner.Scan()
+				novoMes := scanner.Text()
+
+				if dados.Anos[novoAno] == nil {
+					dados.Anos[novoAno] = make(Ano)
+				}
+				dados.Anos[novoAno][novoMes] = m
+				delete(dados.Anos[ano], mes)
+				fmt.Println("Dados movidos para novo mês/ano.")
+				return
+			case "0":
+				fmt.Println("Edição concluída.")
+				dados.Anos[ano][mes] = m
+				return
+			default:
+				fmt.Println("Opção inválida.")
+			}
+
+			dados.Anos[ano][mes] = m
+		}
+	}
 
 	fmt.Print("Digite o aporte na Renda Fixa: R$ ")
 	scanner.Scan()
@@ -267,10 +344,6 @@ func adicionarOuEditarMes(dados *Dados, scanner *bufio.Scanner) {
 	scanner.Scan()
 	lucroRetirado, _ := strconv.ParseFloat(scanner.Text(), 64)
 
-	if dados.Anos[ano] == nil {
-		dados.Anos[ano] = make(Ano)
-	}
-
 	dados.Anos[ano][mes] = Mes{
 		AporteRF:         aporteRF,
 		AporteFIIs:       aporteFIIs,
@@ -281,7 +354,7 @@ func adicionarOuEditarMes(dados *Dados, scanner *bufio.Scanner) {
 		LucroRetirado:    lucroRetirado,
 	}
 
-	fmt.Println("Dados salvos com sucesso!")
+	fmt.Println("Dados adicionados com sucesso!")
 }
 
 func main() {
