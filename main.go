@@ -114,28 +114,35 @@ func selecionarAno(dados Dados, scanner *bufio.Scanner) string {
 		return ""
 	}
 
-	fmt.Println("\nAnos disponíveis:")
 	anos := ordenarChaves(dados.Anos)
+
+	fmt.Println("\nAnos disponíveis:")
+	for i, a := range anos {
+		fmt.Printf("%d - %s\n", i+1, a)
+	}
+
+	fmt.Print("Digite o número ou o ano desejado (YYYY): ")
+	scanner.Scan()
+	input := scanner.Text()
+
+	if idx, err := strconv.Atoi(input); err == nil {
+		if idx >= 1 && idx <= len(anos) {
+			return anos[idx-1]
+		}
+	}
+
+	for _, a := range anos {
+		if a == input {
+			return a
+		}
+	}
+
+	fmt.Printf("Não há dados para o ano ou opção '%s'.\n", input)
+	fmt.Println("Anos disponíveis:")
 	for _, a := range anos {
 		fmt.Println(" -", a)
 	}
-
-	fmt.Print("Digite o ano desejado (YYYY): ")
-	scanner.Scan()
-	ano := scanner.Text()
-
-	if _, existe := dados.Anos[ano]; !existe {
-		fmt.Printf("Não há dados para o ano %s.\n", ano)
-		if len(anos) > 0 {
-			fmt.Println("Anos disponíveis:")
-			for _, a := range anos {
-				fmt.Println(" -", a)
-			}
-		}
-		return ""
-	}
-
-	return ano
+	return ""
 }
 
 func mostrarResumoAno(dados Dados, ano string, horizontal bool) {
