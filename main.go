@@ -135,7 +135,6 @@ func mostrarResumo(dados Dados, horizontal bool) {
 
 			isMesAtual := (ano == anoAtual && mes == mesAtual)
 
-			// Exibe os dados sempre
 			if horizontal {
 				fmt.Printf("| %-8s | R$ %10.2f | R$ %7.2f | R$%4.2f | R$%6.2f | R$ %9.2f | R$ %8.2f | R$ %10.2f | R$ %12.2f | R$ %14.2f | R$ %19.2f |\n",
 					nomeMes(mes), m.AporteRF+m.AporteFIIs, m.AporteRF, m.AporteFIIs, m.Saida, m.LucroRetirado,
@@ -167,7 +166,9 @@ func mostrarResumo(dados Dados, horizontal bool) {
 				fmt.Println("---------------------------------------")
 			}
 
-			if !isMesAtual {
+			lucroValido := lucroMesBruto > impostos
+
+			if lucroValido {
 				aporteRFSoFar += m.AporteRF
 				aporteFIIsSoFar += m.AporteFIIs
 				saidaSoFar += m.Saida
@@ -201,6 +202,7 @@ func mostrarResumo(dados Dados, horizontal bool) {
 	fmt.Printf("Lucro bruto total (RF): R$ %.2f\n", lucroBrutoTotal)
 	fmt.Printf("Lucro líquido total: R$ %.2f\n", lucroLiquidoTotal)
 	fmt.Printf("Lucros retirados: R$ %.2f\n", lucrosRetiradosTotal)
+
 }
 
 func adicionarOuEditarMes(dados *Dados, scanner *bufio.Scanner) {
