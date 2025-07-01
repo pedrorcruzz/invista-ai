@@ -26,7 +26,7 @@ type Dados struct {
 	Anos map[string]Ano `json:"anos"`
 }
 
-const arquivo = "dados.json"
+const arquivo = "dados-lucro-investimentos.json"
 
 func carregarDados() Dados {
 	file, err := os.ReadFile(arquivo)
