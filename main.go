@@ -7,6 +7,7 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"time"
 )
 
 type Mes struct {
@@ -113,6 +114,10 @@ func mostrarResumo(dados Dados, horizontal bool) {
 	lucroLiquidoAcumulado := 0.0
 	saldoAnterior := 0.0
 
+	hoje := time.Now()
+	mesAtual := fmt.Sprintf("%02d", int(hoje.Month()))
+	anoAtual := fmt.Sprintf("%04d", hoje.Year())
+
 	if horizontal {
 		fmt.Println("\n📌 Resumo dos aportes e saldos mensais (Tabela Horizontal)")
 		fmt.Println("\n| Mês      | Aporte Total | Aporte RF | FIIs | Saída | Lucro Ret. | Bruto RF | Líquido RF | Líquido FIIs | Lucro Mês Bruto | Lucro Mês Líquido |")
@@ -124,22 +129,13 @@ func mostrarResumo(dados Dados, horizontal bool) {
 		for _, mes := range meses {
 			m := dados.Anos[ano][mes]
 
-			aporteRFSoFar += m.AporteRF
-			aporteFIIsSoFar += m.AporteFIIs
-			saidaSoFar += m.Saida
-			lucrosRetiradosTotal += m.LucroRetirado
-
-			valorBrutoFinal = m.ValorBrutoRF
-			valorLiquidoRFFinal = m.ValorLiquidoRF
-			valorLiquidoFIIsFinal = m.ValorLiquidoFIIs
-
 			lucroMesBruto := m.ValorBrutoRF - (saldoAnterior + m.AporteRF - m.Saida)
 			impostos := m.ValorBrutoRF - m.ValorLiquidoRF
 			lucroMesLiquido := lucroMesBruto - impostos - m.LucroRetirado
-			saldoAnterior = m.ValorBrutoRF
 
-			lucroLiquidoAcumulado += lucroMesLiquido + m.LucroRetirado // soma real do lucro do mês, antes de retirada
+			isMesAtual := (ano == anoAtual && mes == mesAtual)
 
+			// Exibe os dados sempre
 			if horizontal {
 				fmt.Printf("| %-8s | R$ %10.2f | R$ %7.2f | R$%4.2f | R$%6.2f | R$ %9.2f | R$ %8.2f | R$ %10.2f | R$ %12.2f | R$ %14.2f | R$ %19.2f |\n",
 					nomeMes(mes), m.AporteRF+m.AporteFIIs, m.AporteRF, m.AporteFIIs, m.Saida, m.LucroRetirado,
@@ -147,6 +143,16 @@ func mostrarResumo(dados Dados, horizontal bool) {
 					lucroMesBruto, lucroMesLiquido)
 			} else {
 				fmt.Printf("\nMês: %s/%s\n", nomeMes(mes), ano)
+				fmt.Println("")
+				if isMesAtual {
+					fmt.Println("  ⚠️ Mês atual em andamento — valores podem parecer distorcidos (lucro líquido ainda parcial)")
+				}
+
+				if lucroMesBruto > impostos {
+					fmt.Println("  ✅ Agora os lucros já cobrem os impostos!")
+				}
+				fmt.Println("---------------------------------------")
+
 				fmt.Printf("  Aporte Total:      R$ %.2f\n", m.AporteRF+m.AporteFIIs)
 				fmt.Printf("  Aporte RF:         R$ %.2f\n", m.AporteRF)
 				fmt.Printf("  FIIs:              R$ %.2f\n", m.AporteFIIs)
@@ -157,7 +163,22 @@ func mostrarResumo(dados Dados, horizontal bool) {
 				fmt.Printf("  Líquido FIIs:      R$ %.2f\n", m.ValorLiquidoFIIs)
 				fmt.Printf("  Lucro Mês Bruto:   R$ %.2f\n", lucroMesBruto)
 				fmt.Printf("  Lucro Mês Líquido: R$ %.2f\n", lucroMesLiquido)
+
 				fmt.Println("---------------------------------------")
+			}
+
+			if !isMesAtual {
+				aporteRFSoFar += m.AporteRF
+				aporteFIIsSoFar += m.AporteFIIs
+				saidaSoFar += m.Saida
+				lucrosRetiradosTotal += m.LucroRetirado
+
+				valorBrutoFinal = m.ValorBrutoRF
+				valorLiquidoRFFinal = m.ValorLiquidoRF
+				valorLiquidoFIIsFinal = m.ValorLiquidoFIIs
+
+				lucroLiquidoAcumulado += lucroMesLiquido
+				saldoAnterior = m.ValorBrutoRF
 			}
 		}
 	}
@@ -165,7 +186,7 @@ func mostrarResumo(dados Dados, horizontal bool) {
 	totalAportadoBruto := aporteRFSoFar + aporteFIIsSoFar
 	totalAportadoLiquido := totalAportadoBruto - saidaSoFar
 	lucroBrutoTotal := valorBrutoFinal - totalAportadoLiquido
-	lucroLiquidoTotal := lucroLiquidoAcumulado - lucrosRetiradosTotal
+	lucroLiquidoTotal := lucroLiquidoAcumulado
 
 	if horizontal {
 		fmt.Println()
