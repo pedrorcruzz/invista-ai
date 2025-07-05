@@ -77,8 +77,8 @@ func menu() {
 
 	for {
 		fmt.Println("\n--- MENU PRINCIPAL ---")
-		fmt.Println("1. Ver resumo completo (tabela horizontal)")
-		fmt.Println("2. Ver resumo completo (visualização vertical)")
+		fmt.Println("1. Ver resumo completo (visualização vertical)")
+		fmt.Println("2. Ver resumo completo (tabela horizontal)")
 		fmt.Println("3. Adicionar/editar mês")
 		fmt.Println("4. Sair")
 		fmt.Print("Escolha uma opção: ")
@@ -89,12 +89,12 @@ func menu() {
 		case "1":
 			ano := selecionarAno(dados, scanner)
 			if ano != "" {
-				mostrarResumoAno(dados, ano, true)
+				mostrarResumoAno(dados, ano, false)
 			}
 		case "2":
 			ano := selecionarAno(dados, scanner)
 			if ano != "" {
-				mostrarResumoAno(dados, ano, false)
+				mostrarResumoAno(dados, ano, true)
 			}
 		case "3":
 			adicionarOuEditarMes(&dados, scanner)
