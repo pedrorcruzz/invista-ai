@@ -185,4 +185,5 @@ func AdicionarOuEditarMes(dados *Dados, scanner *bufio.Scanner) {
 		LucroLiquidoFIIs: lucroLiquidoFIIs,
 	}
 	fmt.Println("Dados adicionados com sucesso!")
-} 
+}
+

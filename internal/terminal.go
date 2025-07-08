@@ -1,10 +1,10 @@
 package internal
 
 import (
+	"bufio"
 	"os"
 	"os/exec"
 	"time"
-	"bufio"
 )
 
 func ClearTerminal() {
@@ -21,6 +21,6 @@ func Pause(ms int) {
 }
 
 func WaitEnter(scanner *bufio.Scanner) {
-	// Aguarda o usuário pressionar Enter
 	_ = scanner.Scan()
-} 
+}
+

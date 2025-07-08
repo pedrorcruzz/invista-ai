@@ -2,8 +2,8 @@ package internal
 
 import (
 	"fmt"
-	"time"
 	"sort"
+	"time"
 )
 
 func NomeMes(m string) string {
@@ -227,4 +227,3 @@ func MostrarResumoAno(dados Dados, ano string, horizontal bool) {
 	fmt.Printf("Lucros retirados: R$ %.2f\n", lucrosRetiradosTotal)
 }
 
-// mostrarResumoAno, etc, podem ser adicionadas aqui conforme necessário 

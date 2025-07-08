@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+
 	"github.com/pedrorcruzz/monthly-investments-cli/internal"
 )
 

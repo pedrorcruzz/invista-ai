@@ -12,4 +12,5 @@ func InputBox(prompt string, scanner *bufio.Scanner) string {
 	fmt.Print("→ ")
 	scanner.Scan()
 	return scanner.Text()
-} 
+}
+
