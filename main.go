@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"sort"
 	"strconv"
 	"strings"
@@ -187,6 +188,8 @@ func mostrarResumoMesAtual(dados Dados) {
 }
 
 func printTelaUnificada(dados Dados) {
+	clearTerminal()
+	time.Sleep(300 * time.Millisecond)
 	// Preparar strings de cada seção
 	resumoTotal := getResumoTotalAcumuladoStr(dados)
 	resumoMes := getResumoMesAtualStr(dados)
@@ -350,6 +353,8 @@ func getMenuPrincipalStr() string {
 }
 
 func printMenuPrincipalSozinho() {
+	clearTerminal()
+	time.Sleep(300 * time.Millisecond)
 	fmt.Println("╔══════════════════════════════════════════════════════╗")
 	fmt.Println("║ --- MENU PRINCIPAL ---                             ║")
 	fmt.Println("╠══════════════════════════════════════════════════════╣")
@@ -391,6 +396,8 @@ func menu() {
 			ano := selecionarAno(dados, scanner)
 			if ano != "" {
 				mostrarResumoAno(dados, ano, false)
+				fmt.Print("\nPressione Enter para voltar ao menu...")
+				scanner.Scan()
 			}
 			printMenuPrincipalSozinho()
 			inMenuInicial = false
@@ -398,6 +405,8 @@ func menu() {
 			ano := selecionarAno(dados, scanner)
 			if ano != "" {
 				mostrarResumoAno(dados, ano, true)
+				fmt.Print("\nPressione Enter para voltar ao menu...")
+				scanner.Scan()
 			}
 			printMenuPrincipalSozinho()
 			inMenuInicial = false
@@ -453,6 +462,8 @@ func selecionarAno(dados Dados, scanner *bufio.Scanner) string {
 }
 
 func mostrarResumoAno(dados Dados, ano string, horizontal bool) {
+	clearTerminal()
+	time.Sleep(300 * time.Millisecond)
 	mesesMap, ok := dados.Anos[ano]
 	if !ok || len(mesesMap) == 0 {
 		fmt.Printf("Não há dados para o ano %s.\n", ano)
@@ -723,6 +734,15 @@ func adicionarOuEditarMes(dados *Dados, scanner *bufio.Scanner) {
 	}
 
 	fmt.Println("Dados adicionados com sucesso!")
+}
+
+func clearTerminal() {
+	cmd := exec.Command("clear")
+	if _, ok := os.LookupEnv("OS"); ok {
+		cmd = exec.Command("cls") // para Windows
+	}
+	cmd.Stdout = os.Stdout
+	cmd.Run()
 }
 
 func main() {
