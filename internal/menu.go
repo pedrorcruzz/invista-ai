@@ -121,41 +121,41 @@ func AdicionarOuEditarMes(dados *Dados, scanner *bufio.Scanner) {
 	if m != (Mes{}) {
 		for {
 			fmt.Println("\n--- EDITAR CAMPOS ---")
-			fmt.Printf("1. Aporte RF (atual: %.2f)\n", m.AporteRF)
-			fmt.Printf("2. Aporte FIIs (atual: %.2f)\n", m.AporteFIIs)
-			fmt.Printf("3. Saída (atual: %.2f)\n", m.Saida)
-			fmt.Printf("4. Valor Bruto RF (atual: %.2f)\n", m.ValorBrutoRF)
-			fmt.Printf("5. Valor Líquido RF (atual: %.2f)\n", m.ValorLiquidoRF)
-			fmt.Printf("6. Valor Líquido FIIs (atual: %.2f)\n", m.ValorLiquidoFIIs)
-			fmt.Printf("7. Lucro Retirado (atual: %.2f)\n", m.LucroRetirado)
-			fmt.Printf("8. Lucro Líquido FIIs (atual: %.2f)\n", m.LucroLiquidoFIIs)
+			fmt.Printf("1. Aporte RF (atual: %s)\n", FormatFloatBR(m.AporteRF))
+			fmt.Printf("2. Aporte FIIs (atual: %s)\n", FormatFloatBR(m.AporteFIIs))
+			fmt.Printf("3. Saída (atual: %s)\n", FormatFloatBR(m.Saida))
+			fmt.Printf("4. Valor Bruto RF (atual: %s)\n", FormatFloatBR(m.ValorBrutoRF))
+			fmt.Printf("5. Valor Líquido RF (atual: %s)\n", FormatFloatBR(m.ValorLiquidoRF))
+			fmt.Printf("6. Valor Líquido FIIs (atual: %s)\n", FormatFloatBR(m.ValorLiquidoFIIs))
+			fmt.Printf("7. Lucro Retirado (atual: %s)\n", FormatFloatBR(m.LucroRetirado))
+			fmt.Printf("8. Lucro Líquido FIIs (atual: %s)\n", FormatFloatBR(m.LucroLiquidoFIIs))
 			fmt.Println("0. Sair da edição")
 			opcao := InputBox("Escolha:", scanner)
 			switch opcao {
 			case "1":
 				valor := InputBox("Novo valor:", scanner)
-				m.AporteRF, _ = strconv.ParseFloat(valor, 64)
+				m.AporteRF, _ = ParseFloatBR(valor)
 			case "2":
 				valor := InputBox("Novo valor:", scanner)
-				m.AporteFIIs, _ = strconv.ParseFloat(valor, 64)
+				m.AporteFIIs, _ = ParseFloatBR(valor)
 			case "3":
 				valor := InputBox("Novo valor:", scanner)
-				m.Saida, _ = strconv.ParseFloat(valor, 64)
+				m.Saida, _ = ParseFloatBR(valor)
 			case "4":
 				valor := InputBox("Novo valor:", scanner)
-				m.ValorBrutoRF, _ = strconv.ParseFloat(valor, 64)
+				m.ValorBrutoRF, _ = ParseFloatBR(valor)
 			case "5":
 				valor := InputBox("Novo valor:", scanner)
-				m.ValorLiquidoRF, _ = strconv.ParseFloat(valor, 64)
+				m.ValorLiquidoRF, _ = ParseFloatBR(valor)
 			case "6":
 				valor := InputBox("Novo valor:", scanner)
-				m.ValorLiquidoFIIs, _ = strconv.ParseFloat(valor, 64)
+				m.ValorLiquidoFIIs, _ = ParseFloatBR(valor)
 			case "7":
 				valor := InputBox("Novo valor:", scanner)
-				m.LucroRetirado, _ = strconv.ParseFloat(valor, 64)
+				m.LucroRetirado, _ = ParseFloatBR(valor)
 			case "8":
 				valor := InputBox("Novo valor:", scanner)
-				m.LucroLiquidoFIIs, _ = strconv.ParseFloat(valor, 64)
+				m.LucroLiquidoFIIs, _ = ParseFloatBR(valor)
 			case "0":
 				dados.Anos[ano][mes] = m
 				fmt.Println("Edição concluída.")
@@ -166,14 +166,14 @@ func AdicionarOuEditarMes(dados *Dados, scanner *bufio.Scanner) {
 			dados.Anos[ano][mes] = m
 		}
 	}
-	aporteRF, _ := strconv.ParseFloat(InputBox("Digite o aporte na Renda Fixa: R$", scanner), 64)
-	aporteFIIs, _ := strconv.ParseFloat(InputBox("Digite o aporte em FIIs: R$", scanner), 64)
-	saida, _ := strconv.ParseFloat(InputBox("Digite a saída (retirada) do mês: R$", scanner), 64)
-	valorBrutoRF, _ := strconv.ParseFloat(InputBox("Digite o valor bruto da Renda Fixa: R$", scanner), 64)
-	valorLiquidoRF, _ := strconv.ParseFloat(InputBox("Digite o valor líquido da Renda Fixa: R$", scanner), 64)
-	valorLiquidoFIIs, _ := strconv.ParseFloat(InputBox("Digite o valor líquido dos FIIs: R$", scanner), 64)
-	lucroRetirado, _ := strconv.ParseFloat(InputBox("Digite o valor de lucro retirado: R$", scanner), 64)
-	lucroLiquidoFIIs, _ := strconv.ParseFloat(InputBox("Digite o lucro líquido dos FIIs: R$", scanner), 64)
+	aporteRF, _ := ParseFloatBR(InputBox("Digite o aporte na Renda Fixa: R$", scanner))
+	aporteFIIs, _ := ParseFloatBR(InputBox("Digite o aporte em FIIs: R$", scanner))
+	saida, _ := ParseFloatBR(InputBox("Digite a saída (retirada) do mês: R$", scanner))
+	valorBrutoRF, _ := ParseFloatBR(InputBox("Digite o valor bruto da Renda Fixa: R$", scanner))
+	valorLiquidoRF, _ := ParseFloatBR(InputBox("Digite o valor líquido da Renda Fixa: R$", scanner))
+	valorLiquidoFIIs, _ := ParseFloatBR(InputBox("Digite o valor líquido dos FIIs: R$", scanner))
+	lucroRetirado, _ := ParseFloatBR(InputBox("Digite o valor de lucro retirado: R$", scanner))
+	lucroLiquidoFIIs, _ := ParseFloatBR(InputBox("Digite o lucro líquido dos FIIs: R$", scanner))
 	dados.Anos[ano][mes] = Mes{
 		AporteRF:         aporteRF,
 		AporteFIIs:       aporteFIIs,
@@ -187,3 +187,8 @@ func AdicionarOuEditarMes(dados *Dados, scanner *bufio.Scanner) {
 	fmt.Println("Dados adicionados com sucesso!")
 }
 
+// ParseFloatBR converte string com vírgula ou ponto para float64
+func ParseFloatBR(s string) (float64, error) {
+	s = strings.ReplaceAll(s, ",", ".")
+	return strconv.ParseFloat(s, 64)
+}
