@@ -83,11 +83,11 @@ Valor bruto final (RF): R$ %s
 Valor líquido final (RF): R$ %s
 Valor líquido final (FIIs): R$ %s
 Lucro bruto total (RF): R$ %s
+Lucros retirados: R$ %s
 Lucro Líquido RF: R$ %s
 Lucro Líquido FIIs: R$ %s
-Lucro Total Líquido (RF + FIIs): R$ %s
-Lucros retirados: R$ %s`,
-		FormatFloatBR(totalAportadoBruto), FormatFloatBR(totalAportadoLiquido), FormatFloatBR(valorBrutoFinal), FormatFloatBR(valorLiquidoRFFinal), FormatFloatBR(valorLiquidoFIIsFinal), FormatFloatBR(lucroBrutoTotal), FormatFloatBR(lucroLiquidoAcumulado), FormatFloatBR(lucroLiquidoFIIsAcumulado), FormatFloatBR(lucroMesLiquidoTotalAcumulado), FormatFloatBR(lucrosRetiradosTotal))
+Lucro Total Líquido (RF + FIIs): R$ %s`,
+		FormatFloatBR(totalAportadoBruto), FormatFloatBR(totalAportadoLiquido), FormatFloatBR(valorBrutoFinal), FormatFloatBR(valorLiquidoRFFinal), FormatFloatBR(valorLiquidoFIIsFinal), FormatFloatBR(lucroBrutoTotal), FormatFloatBR(lucrosRetiradosTotal), FormatFloatBR(lucroLiquidoAcumulado), FormatFloatBR(lucroLiquidoFIIsAcumulado), FormatFloatBR(lucroMesLiquidoTotalAcumulado))
 }
 
 func GetResumoMesAtualStr(dados Dados) string {
