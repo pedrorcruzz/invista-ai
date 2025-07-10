@@ -23,6 +23,10 @@
 
 ---
 
+## 📋 Requisitos
+
+- É necessário ter o [Go](https://golang.org/dl/) instalado na sua máquina (versão recomendada: Go 1.20 ou superior).
+
 ## 🚀 Primeiros Passos
 
 ### 1. Clone o Repositório

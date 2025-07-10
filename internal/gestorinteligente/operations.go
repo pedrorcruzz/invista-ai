@@ -280,16 +280,16 @@ func anteciparParcelas(reader *bufio.Reader, lista *ListaProdutos) {
 
 func atualizarLucroMensal(reader *bufio.Reader, lista *ListaProdutos) {
 	titulo := " ATUALIZAR LUCRO MENSAL "
-	divisor := strings.Repeat("-", 40)
-
-	fmt.Println("\n" + divisor)
-	fmt.Println(titulo)
-	fmt.Println(divisor)
-	fmt.Println("0. Voltar ao Menu")
-	fmt.Println(divisor)
-
-	fmt.Printf("Lucro mensal atual: R$%.2f\n", lista.LucroMensal)
-	fmt.Print("Novo lucro mensal (R$): ")
+	linhas := []string{
+		titulo,
+		"",
+		"0. Voltar ao Menu",
+		"",
+		fmt.Sprintf("Lucro mensal atual: R$%.2f", lista.LucroMensal),
+		"Novo lucro mensal (R$):",
+	}
+	ImprimirCaixa(linhas)
+	fmt.Print("")
 	profitStr, _ := reader.ReadString('\n')
 	profitStr = strings.TrimSpace(profitStr)
 	profitStr = strings.ReplaceAll(profitStr, ",", ".")
@@ -300,17 +300,14 @@ func atualizarLucroMensal(reader *bufio.Reader, lista *ListaProdutos) {
 
 	profit, err := strconv.ParseFloat(profitStr, 64)
 	if err != nil || profit < 0 {
-		fmt.Println("Valor inválido.")
+		ImprimirCaixa([]string{"Valor inválido."})
 		time.Sleep(2 * time.Second)
 		return
 	}
 
 	lista.LucroMensal = profit
 
-	fmt.Println(divisor)
-	fmt.Printf("✅ Lucro mensal atualizado para R$%.2f!\n", profit)
-	fmt.Println(divisor)
-
+	ImprimirCaixa([]string{fmt.Sprintf("✅ Lucro mensal atualizado para R$%.2f!", profit)})
 	time.Sleep(2 * time.Second)
 }
 
