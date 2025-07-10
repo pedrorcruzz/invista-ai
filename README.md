@@ -13,6 +13,8 @@
 > **🔔 Nota:** Este repositório reúne o antigo `smart-spending-checker CLI` (também criado por mim) em uma única ferramenta para **gestão de investimentos** e **controle inteligente de gastos**.  
 > Todos os recursos agora estão centralizados em um só lugar!
 
+> ⚠️ **Atenção:** Este sistema foi projetado para funcionar apenas com investimentos em Renda Fixa (RDB e CDB) e Fundos Imobiliários (FIIs). O controle de FIIs serve apenas para organizar e somar os dividendos recebidos na planilha, não sendo um controle detalhado de cotas ou operações.
+
 ## ✨ Funcionalidades
 
 - 📈 <b>Controle de Investimentos</b> — Adicione/edite dados mensais, veja lucros brutos/líquidos e visualize seu progresso.
