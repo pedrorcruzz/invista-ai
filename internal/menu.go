@@ -16,7 +16,8 @@ func PrintMenuPrincipalSozinho() {
 	fmt.Println("║ 1. Ver resumo completo (visualização vertical)      ║")
 	fmt.Println("║ 2. Ver resumo completo (tabela horizontal)          ║")
 	fmt.Println("║ 3. Adicionar/editar mês                             ║")
-	fmt.Println("║ 4. Voltar para o menu inicial                       ║")
+	fmt.Println("║ 4. Gestor Inteligente de Gastos                     ║")
+	fmt.Println("║ 5. Voltar para o menu inicial                       ║")
 	fmt.Println("╚══════════════════════════════════════════════════════╝")
 }
 
@@ -77,7 +78,8 @@ func GetMenuPrincipalStr() string {
 1. Ver resumo completo (visualização vertical)
 2. Ver resumo completo (tabela horizontal)
 3. Adicionar/editar mês
-4. Sair do programa`
+4. Gestor Inteligente de Gastos
+5. Sair do programa`
 }
 
 func SelecionarAno(dados Dados, scanner *bufio.Scanner) string {

@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pedrorcruzz/monthly-investments-cli/internal"
+	"github.com/pedrorcruzz/invista-ai/internal"
+	"github.com/pedrorcruzz/invista-ai/internal/gestorinteligente"
 )
 
 func main() {
@@ -20,12 +21,12 @@ func main() {
 		scanner.Scan()
 		opcao := scanner.Text()
 
-		if inMenuInicial && opcao == "4" {
+		if inMenuInicial && opcao == "5" {
 			fmt.Println("Saindo...")
 			return
 		}
 
-		if !inMenuInicial && opcao == "4" {
+		if !inMenuInicial && opcao == "5" {
 			internal.PrintTelaUnificada(dados)
 			inMenuInicial = true
 			continue
@@ -53,6 +54,10 @@ func main() {
 		case "3":
 			internal.AdicionarOuEditarMes(&dados, scanner)
 			internal.SalvarDados(dados)
+			internal.PrintTelaUnificada(dados)
+			inMenuInicial = true
+		case "4":
+			gestorinteligente.ShowGestorMenu()
 			internal.PrintTelaUnificada(dados)
 			inMenuInicial = true
 		default:
