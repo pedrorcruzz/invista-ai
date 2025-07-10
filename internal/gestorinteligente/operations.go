@@ -229,7 +229,7 @@ func anteciparParcelas(reader *bufio.Reader, lista *ListaProdutos) {
 
 	p := &lista.Produtos[idx]
 	now := time.Now()
-	currentInstallment := getNumeroParcela(*p, now.Year(), int(now.Month()))
+	currentInstallment := obterNumeroParcela(*p, now.Year(), int(now.Month()))
 
 	if currentInstallment >= p.Parcelas {
 		fmt.Println("Este produto já foi totalmente pago.")
@@ -397,7 +397,7 @@ func listarMeses(reader *bufio.Reader, lista ListaProdutos) {
 
 	monthLines := []string{fmt.Sprintf("Meses de %d:", year)}
 	for i, m := range meses {
-		monthLines = append(monthLines, fmt.Sprintf("%d. %s", i+1, nomesDosMeses[m-1]))
+		monthLines = append(monthLines, fmt.Sprintf("%d. %s", i+1, nomesMeses[m-1]))
 	}
 	ImprimirCaixa(monthLines)
 	fmt.Print("Mês: ")
@@ -418,7 +418,7 @@ func listarMeses(reader *bufio.Reader, lista ListaProdutos) {
 
 	prodIndexes := mesesMap[month]
 	if len(prodIndexes) == 0 {
-		ImprimirCaixa([]string{fmt.Sprintf("Nenhum produto encontrado para %s/%d.", nomesDosMeses[month-1], year)})
+		ImprimirCaixa([]string{fmt.Sprintf("Nenhum produto encontrado para %s/%d.", nomesMeses[month-1], year)})
 		time.Sleep(2 * time.Second)
 		return
 	}
@@ -432,11 +432,11 @@ func listarMeses(reader *bufio.Reader, lista ListaProdutos) {
 		}
 	}
 
-	productsTitle := fmt.Sprintf("PRODUTOS DE %s/%d", nomesDosMeses[month-1], year)
+	productsTitle := fmt.Sprintf("PRODUTOS DE %s/%d", nomesMeses[month-1], year)
 	productLines := []string{productsTitle, ""}
 	for i, idx := range uniqueIndexes {
 		p := lista.Produtos[idx]
-		installmentNumber := getNumeroParcela(p, year, month)
+		installmentNumber := obterNumeroParcela(p, year, month)
 		productLines = append(productLines, fmt.Sprintf("%d. %s | Total: R$%.2f | Parcela: R$%.2f (%d/%d)",
 			i+1, p.Nome, p.ValorTotal, p.Parcela, installmentNumber, p.Parcelas))
 	}
@@ -487,7 +487,7 @@ func selecionarProdutoPorAnoMesOuNome(reader *bufio.Reader, produtos []Produto) 
 
 	monthLines := []string{fmt.Sprintf("Meses de %d:", year)}
 	for i, m := range meses {
-		monthLines = append(monthLines, fmt.Sprintf("%d. %s", i+1, nomesDosMeses[m-1]))
+		monthLines = append(monthLines, fmt.Sprintf("%d. %s", i+1, nomesMeses[m-1]))
 	}
 	ImprimirCaixa(monthLines)
 	fmt.Print("Mês: ")

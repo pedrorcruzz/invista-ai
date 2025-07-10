@@ -48,7 +48,7 @@ func main() {
 			internal.PrintTelaUnificada(dados)
 			inMenuInicial = true
 		case "3":
-			gestorinteligente.ShowGestorMenu()
+			gestorinteligente.MostrarMenuGestor()
 			internal.PrintTelaUnificada(dados)
 			inMenuInicial = true
 		default:
