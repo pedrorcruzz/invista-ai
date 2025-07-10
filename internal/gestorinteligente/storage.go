@@ -6,52 +6,52 @@ import (
 	"path/filepath"
 )
 
-const dataDir = "data"
-const dataFile = "products.json"
+const pastaDados = "data"
+const arquivoDados = "produtos.json"
 
-func ensureDataDir() error {
-	if _, err := os.Stat(dataDir); os.IsNotExist(err) {
-		return os.Mkdir(dataDir, 0755)
+func garantirPastaDados() error {
+	if _, err := os.Stat(pastaDados); os.IsNotExist(err) {
+		return os.Mkdir(pastaDados, 0755)
 	}
 	return nil
 }
 
-func LoadProducts() (ProductList, error) {
-	var list ProductList
-	list.SafePercentage = 70
+func CarregarProdutos() (ListaProdutos, error) {
+	var lista ListaProdutos
+	lista.PorcentagemSegura = 70
 
-	if err := ensureDataDir(); err != nil {
-		return list, err
+	if err := garantirPastaDados(); err != nil {
+		return lista, err
 	}
 
-	filePath := filepath.Join(dataDir, dataFile)
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		return list, nil
+	caminhoArquivo := filepath.Join(pastaDados, arquivoDados)
+	if _, err := os.Stat(caminhoArquivo); os.IsNotExist(err) {
+		return lista, nil
 	}
 
-	data, err := os.ReadFile(filePath)
+	dados, err := os.ReadFile(caminhoArquivo)
 	if err != nil {
-		return list, err
+		return lista, err
 	}
 
-	if len(data) == 0 {
-		return list, nil
+	if len(dados) == 0 {
+		return lista, nil
 	}
 
-	err = json.Unmarshal(data, &list)
-	return list, err
+	err = json.Unmarshal(dados, &lista)
+	return lista, err
 }
 
-func SaveProducts(list ProductList) error {
-	if err := ensureDataDir(); err != nil {
+func SalvarProdutos(lista ListaProdutos) error {
+	if err := garantirPastaDados(); err != nil {
 		return err
 	}
 
-	data, err := json.MarshalIndent(list, "", "  ")
+	dados, err := json.MarshalIndent(lista, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	filePath := filepath.Join(dataDir, dataFile)
-	return os.WriteFile(filePath, data, 0644)
+	caminhoArquivo := filepath.Join(pastaDados, arquivoDados)
+	return os.WriteFile(caminhoArquivo, dados, 0644)
 }

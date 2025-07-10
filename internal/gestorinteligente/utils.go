@@ -12,14 +12,14 @@ import (
 	"time"
 )
 
-var monthNames = []string{
+var nomesMeses = []string{
 	"Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
 	"Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 }
 
-func PrintCaixa(lines []string) {
+func ImprimirCaixa(linhas []string) {
 	maxLen := 0
-	for _, l := range lines {
+	for _, l := range linhas {
 		if len(l) > maxLen {
 			maxLen = len(l)
 		}
@@ -30,13 +30,13 @@ func PrintCaixa(lines []string) {
 	linhaTopo := "╔" + strings.Repeat("═", maxLen+2) + "╗"
 	linhaBase := "╚" + strings.Repeat("═", maxLen+2) + "╝"
 	fmt.Println(linhaTopo)
-	for _, l := range lines {
+	for _, l := range linhas {
 		fmt.Printf("║ %-*s ║\n", maxLen, l)
 	}
 	fmt.Println(linhaBase)
 }
 
-func ClearTerminal() {
+func LimparTerminal() {
 	var cmd *exec.Cmd
 	if runtime.GOOS == "windows" {
 		cmd = exec.Command("cmd", "/c", "cls")
@@ -48,101 +48,101 @@ func ClearTerminal() {
 	cmd.Run()
 }
 
-func mapProductsByYearMonth(products []Product) map[int]map[int][]int {
-	result := make(map[int]map[int][]int)
-	for idx, p := range products {
-		endDate := p.CreatedAt.AddDate(0, p.Installments-1, 0)
-		currentDate := p.CreatedAt
+func mapearProdutosPorAnoMes(produtos []Produto) map[int]map[int][]int {
+	resultado := make(map[int]map[int][]int)
+	for idx, p := range produtos {
+		dataFim := p.CriadoEm.AddDate(0, p.Parcelas-1, 0)
+		dataAtual := p.CriadoEm
 
-		for !currentDate.After(endDate) {
-			currentYear := currentDate.Year()
-			currentMonth := int(currentDate.Month())
+		for !dataAtual.After(dataFim) {
+			anoAtual := dataAtual.Year()
+			mesAtual := int(dataAtual.Month())
 
-			if _, ok := result[currentYear]; !ok {
-				result[currentYear] = make(map[int][]int)
+			if _, ok := resultado[anoAtual]; !ok {
+				resultado[anoAtual] = make(map[int][]int)
 			}
-			result[currentYear][currentMonth] = append(result[currentYear][currentMonth], idx)
+			resultado[anoAtual][mesAtual] = append(resultado[anoAtual][mesAtual], idx)
 
-			currentDate = currentDate.AddDate(0, 1, 0)
+			dataAtual = dataAtual.AddDate(0, 1, 0)
 		}
 	}
-	return result
+	return resultado
 }
 
-func selectProductByYearMonth(reader *bufio.Reader, products []Product) (int, bool) {
-	byYearMonth := mapProductsByYearMonth(products)
-	if len(byYearMonth) == 0 {
+func selecionarProdutoPorAnoMes(reader *bufio.Reader, produtos []Produto) (int, bool) {
+	porAnoMes := mapearProdutosPorAnoMes(produtos)
+	if len(porAnoMes) == 0 {
 		fmt.Println("Nenhum produto cadastrado.")
 		return -1, false
 	}
 
-	years := make([]int, 0, len(byYearMonth))
-	for y := range byYearMonth {
-		years = append(years, y)
+	anos := make([]int, 0, len(porAnoMes))
+	for y := range porAnoMes {
+		anos = append(anos, y)
 	}
-	sort.Ints(years)
+	sort.Ints(anos)
 
 	fmt.Println("\nSelecione o ano (0 para voltar):")
-	for i, y := range years {
+	for i, y := range anos {
 		fmt.Printf("%d. %d\n", i+1, y)
 	}
 	fmt.Print("Ano: ")
-	yearStr, _ := reader.ReadString('\n')
-	yearStr = strings.TrimSpace(yearStr)
+	anoStr, _ := reader.ReadString('\n')
+	anoStr = strings.TrimSpace(anoStr)
 
-	if yearStr == "0" {
+	if anoStr == "0" {
 		return -1, false
 	}
 
-	yearIdx, err := strconv.Atoi(yearStr)
-	if err != nil || yearIdx < 1 || yearIdx > len(years) {
+	anoIdx, err := strconv.Atoi(anoStr)
+	if err != nil || anoIdx < 1 || anoIdx > len(anos) {
 		fmt.Println("Ano inválido.")
 		return -1, false
 	}
-	year := years[yearIdx-1]
+	ano := anos[anoIdx-1]
 
-	monthsMap := byYearMonth[year]
-	months := make([]int, 0, len(monthsMap))
-	for m := range monthsMap {
-		months = append(months, m)
+	mesesMap := porAnoMes[ano]
+	meses := make([]int, 0, len(mesesMap))
+	for m := range mesesMap {
+		meses = append(meses, m)
 	}
-	sort.Ints(months)
+	sort.Ints(meses)
 
 	fmt.Println("\nSelecione o mês (0 para voltar):")
-	for i, m := range months {
-		fmt.Printf("%d. %s\n", i+1, monthNames[m-1])
+	for i, m := range meses {
+		fmt.Printf("%d. %s\n", i+1, nomesMeses[m-1])
 	}
 	fmt.Print("Mês: ")
-	monthStr, _ := reader.ReadString('\n')
-	monthStr = strings.TrimSpace(monthStr)
+	mesStr, _ := reader.ReadString('\n')
+	mesStr = strings.TrimSpace(mesStr)
 
-	if monthStr == "0" {
+	if mesStr == "0" {
 		return -1, false
 	}
 
-	monthIdx, err := strconv.Atoi(monthStr)
-	if err != nil || monthIdx < 1 || monthIdx > len(months) {
+	mesIdx, err := strconv.Atoi(mesStr)
+	if err != nil || mesIdx < 1 || mesIdx > len(meses) {
 		fmt.Println("Mês inválido.")
 		return -1, false
 	}
-	month := months[monthIdx-1]
+	mes := meses[mesIdx-1]
 
-	prodIndexes := monthsMap[month]
+	idxProdutos := mesesMap[mes]
 
-	uniqueIndexes := make([]int, 0)
-	seen := make(map[int]bool)
-	for _, idx := range prodIndexes {
-		if !seen[idx] {
-			seen[idx] = true
-			uniqueIndexes = append(uniqueIndexes, idx)
+	idxUnicos := make([]int, 0)
+	vistos := make(map[int]bool)
+	for _, idx := range idxProdutos {
+		if !vistos[idx] {
+			vistos[idx] = true
+			idxUnicos = append(idxUnicos, idx)
 		}
 	}
 
 	fmt.Println("\nSelecione o produto (0 para voltar):")
-	for i, idx := range uniqueIndexes {
-		p := products[idx]
+	for i, idx := range idxUnicos {
+		p := produtos[idx]
 		fmt.Printf("%d. %s | Total: R$%.2f | Parcelas: %d | Adicionado em: %s\n",
-			i+1, p.Name, p.TotalValue, p.Installments, p.CreatedAt.Format("02/01/2006"))
+			i+1, p.Nome, p.ValorTotal, p.Parcelas, p.CriadoEm.Format("02/01/2006"))
 	}
 	fmt.Print("Produto: ")
 	prodStr, _ := reader.ReadString('\n')
@@ -153,40 +153,40 @@ func selectProductByYearMonth(reader *bufio.Reader, products []Product) (int, bo
 	}
 
 	prodIdx, err := strconv.Atoi(prodStr)
-	if err != nil || prodIdx < 1 || prodIdx > len(uniqueIndexes) {
+	if err != nil || prodIdx < 1 || prodIdx > len(idxUnicos) {
 		fmt.Println("Produto inválido.")
 		return -1, false
 	}
-	return uniqueIndexes[prodIdx-1], true
+	return idxUnicos[prodIdx-1], true
 }
 
-func readFloat(reader *bufio.Reader, prompt string) (float64, error) {
+func lerFloat(reader *bufio.Reader, prompt string) (float64, error) {
 	fmt.Print(prompt)
-	valueStr, _ := reader.ReadString('\n')
-	valueStr = strings.TrimSpace(valueStr)
-	valueStr = strings.ReplaceAll(valueStr, ",", ".")
-	return strconv.ParseFloat(valueStr, 64)
+	valorStr, _ := reader.ReadString('\n')
+	valorStr = strings.TrimSpace(valorStr)
+	valorStr = strings.ReplaceAll(valorStr, ",", ".")
+	return strconv.ParseFloat(valorStr, 64)
 }
 
-func isProductActiveInMonth(p Product, targetYear, targetMonth int) bool {
-	startDate := p.CreatedAt
-	endDate := startDate.AddDate(0, p.Installments-1, 0)
+func produtoAtivoNoMes(p Produto, anoAlvo, mesAlvo int) bool {
+	dataInicio := p.CriadoEm
+	dataFim := dataInicio.AddDate(0, p.Parcelas-1, 0)
 
-	targetDate := time.Date(targetYear, time.Month(targetMonth), 1, 0, 0, 0, 0, time.UTC)
-	return !targetDate.Before(startDate) && !targetDate.After(endDate)
+	dataAlvo := time.Date(anoAlvo, time.Month(mesAlvo), 1, 0, 0, 0, 0, time.UTC)
+	return !dataAlvo.Before(dataInicio) && !dataAlvo.After(dataFim)
 }
 
-func getInstallmentNumber(p Product, targetYear, targetMonth int) int {
-	startDate := p.CreatedAt
-	yearDiff := targetYear - startDate.Year()
-	monthDiff := targetMonth - int(startDate.Month())
-	totalMonthDiff := yearDiff*12 + monthDiff + 1
+func obterNumeroParcela(p Produto, anoAlvo, mesAlvo int) int {
+	dataInicio := p.CriadoEm
+	anoDif := anoAlvo - dataInicio.Year()
+	mesDif := mesAlvo - int(dataInicio.Month())
+	difTotalMes := anoDif*12 + mesDif + 1
 
-	if totalMonthDiff < 1 {
+	if difTotalMes < 1 {
 		return 1
 	}
-	if totalMonthDiff > p.Installments {
-		return p.Installments
+	if difTotalMes > p.Parcelas {
+		return p.Parcelas
 	}
-	return totalMonthDiff
+	return difTotalMes
 }

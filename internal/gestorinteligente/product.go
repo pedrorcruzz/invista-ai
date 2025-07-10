@@ -2,18 +2,18 @@ package gestorinteligente
 
 import "time"
 
-type Product struct {
-	Name         string    `json:"name"`
-	Parcel       float64   `json:"parcel"`
-	TotalValue   float64   `json:"total_value"`
-	Installments int       `json:"installments"`
-	CreatedAt    time.Time `json:"created_at"`
+type Produto struct {
+	Nome       string    `json:"nome"`
+	Parcela    float64   `json:"parcela"`
+	ValorTotal float64   `json:"valor_total"`
+	Parcelas   int       `json:"parcelas"`
+	CriadoEm   time.Time `json:"criado_em"`
 }
 
-type ProductList struct {
-	Products       []Product `json:"products"`
-	MonthlyProfit  float64   `json:"monthly_profit"`
-	Month          int       `json:"month"`
-	Year           int       `json:"year"`
-	SafePercentage float64   `json:"safe_percentage"`
+type ListaProdutos struct {
+	Produtos          []Produto `json:"produtos"`
+	LucroMensal       float64   `json:"lucro_mensal"`
+	Mes               int       `json:"mes"`
+	Ano               int       `json:"ano"`
+	PorcentagemSegura float64   `json:"porcentagem_segura"`
 }

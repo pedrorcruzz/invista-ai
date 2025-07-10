@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func getGestorMenuStr() string {
+func obterMenuGestorStr() string {
 	return `--- MENU GESTOR INTELIGENTE ---
 1. Adicionar produto
 2. Remover produto
@@ -21,30 +21,29 @@ func getGestorMenuStr() string {
 8. Voltar ao menu principal`
 }
 
-func getGestorResumoStr(list ProductList) string {
+func obterResumoGestorStr(lista ListaProdutos) string {
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("RESUMO DO MÊS (%02d/%d - %s)", time.Now().Month(), time.Now().Year(), monthNames[time.Now().Month()-1]))
+	b.WriteString(fmt.Sprintf("RESUMO DO MÊS (%02d/%d - %s)", time.Now().Month(), time.Now().Year(), nomesMeses[time.Now().Month()-1]))
 	b.WriteString("\n------------------------------")
-	b.WriteString(fmt.Sprintf("\nLucro mensal: R$%.2f", list.MonthlyProfit))
+	b.WriteString(fmt.Sprintf("\nLucro mensal: R$%.2f", lista.LucroMensal))
 	b.WriteString(fmt.Sprintf("\nTotal de parcelas: R$%.2f", 0.0)) // Placeholder, pode melhorar
 	b.WriteString("\n...")                                         // Pode adicionar mais detalhes se quiser
 	return b.String()
 }
 
-func getGestorMensagemStr(list ProductList) string {
-	if list.MonthlyProfit == 0 {
+func obterMensagemGestorStr(lista ListaProdutos) string {
+	if lista.LucroMensal == 0 {
 		return "Por favor, defina seu lucro mensal antes de adicionar produtos."
 	}
 	return ""
 }
 
-func PrintGestorMenuCompleto(list ProductList) {
+func ImprimirMenuGestorCompleto(lista ListaProdutos) {
 	titulo := " Gestor Inteligente de Gastos "
-	resumo := captureShowSummary(list)
-	mensagem := getGestorMensagemStr(list)
-	menu := getGestorMenuStr()
+	resumo := capturarResumo(lista)
+	mensagem := obterMensagemGestorStr(lista)
+	menu := obterMenuGestorStr()
 
-	// Quebrar em linhas
 	blocos := [][]string{
 		{titulo},
 		strings.Split(resumo, "\n"),
@@ -54,7 +53,6 @@ func PrintGestorMenuCompleto(list ProductList) {
 	}
 	blocos = append(blocos, strings.Split(menu, "\n"))
 
-	// Calcular o maior comprimento
 	maxLen := 0
 	for _, bloco := range blocos {
 		for _, l := range bloco {
@@ -83,13 +81,12 @@ func PrintGestorMenuCompleto(list ProductList) {
 	fmt.Println(linhaBase)
 }
 
-// Função para capturar a saída de showSummary como string
-func captureShowSummary(list ProductList) string {
+func capturarResumo(lista ListaProdutos) string {
 	var b strings.Builder
 	old := os.Stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	showSummary(list)
+	mostrarResumo(lista)
 	w.Close()
 	os.Stdout = old
 	buf := make([]byte, 4096)
@@ -98,18 +95,17 @@ func captureShowSummary(list ProductList) string {
 	return strings.TrimRight(b.String(), "\n")
 }
 
-func ShowGestorMenu() {
+func MostrarMenuGestor() {
 	reader := bufio.NewReader(os.Stdin)
-	list, _ := LoadProducts()
+	lista, _ := CarregarProdutos()
 
-	if list.SafePercentage == 0 {
-		list.SafePercentage = 70
+	if lista.PorcentagemSegura == 0 {
+		lista.PorcentagemSegura = 70
 	}
 
-	// Verificar se é a primeira vez e o lucro mensal não foi definido
-	if list.MonthlyProfit == 0 {
-		ClearTerminal()
-		PrintCaixa([]string{
+	if lista.LucroMensal == 0 {
+		LimparTerminal()
+		ImprimirCaixa([]string{
 			"🎯 CONFIGURAÇÃO INICIAL",
 			"",
 			"Bem-vindo ao Gestor Inteligente de Gastos!",
@@ -121,13 +117,13 @@ func ShowGestorMenu() {
 			"Digite seu lucro mensal (R$):",
 		})
 		fmt.Print("→ ")
-		profitStr, _ := reader.ReadString('\n')
-		profitStr = strings.TrimSpace(profitStr)
-		profitStr = strings.ReplaceAll(profitStr, ",", ".")
+		lucroStr, _ := reader.ReadString('\n')
+		lucroStr = strings.TrimSpace(lucroStr)
+		lucroStr = strings.ReplaceAll(lucroStr, ",", ".")
 
-		profit, err := strconv.ParseFloat(profitStr, 64)
-		if err != nil || profit <= 0 {
-			PrintCaixa([]string{
+		lucro, err := strconv.ParseFloat(lucroStr, 64)
+		if err != nil || lucro <= 0 {
+			ImprimirCaixa([]string{
 				"❌ Valor inválido!",
 				"",
 				"Por favor, digite um valor válido maior que zero.",
@@ -137,13 +133,13 @@ func ShowGestorMenu() {
 			return
 		}
 
-		list.MonthlyProfit = profit
-		SaveProducts(list)
+		lista.LucroMensal = lucro
+		SalvarProdutos(lista)
 
-		PrintCaixa([]string{
+		ImprimirCaixa([]string{
 			"✅ Lucro mensal configurado com sucesso!",
 			"",
-			fmt.Sprintf("Seu lucro mensal: R$%.2f", profit),
+			fmt.Sprintf("Seu lucro mensal: R$%.2f", lucro),
 			"",
 			"Agora você pode começar a adicionar produtos.",
 		})
@@ -151,41 +147,41 @@ func ShowGestorMenu() {
 	}
 
 	for {
-		ClearTerminal()
-		PrintGestorMenuCompleto(list)
-		fmt.Print("Escolha uma opcão: ")
-		choice, _ := reader.ReadString('\n')
-		choice = strings.TrimSpace(choice)
+		LimparTerminal()
+		ImprimirMenuGestorCompleto(lista)
+		fmt.Print("Escolha uma opção: ")
+		escolha, _ := reader.ReadString('\n')
+		escolha = strings.TrimSpace(escolha)
 
-		switch choice {
+		switch escolha {
 		case "1":
-			ClearTerminal()
-			addProduct(reader, &list)
+			LimparTerminal()
+			adicionarProduto(reader, &lista)
 		case "2":
-			ClearTerminal()
-			removeProduct(reader, &list)
+			LimparTerminal()
+			removerProduto(reader, &lista)
 		case "3":
-			ClearTerminal()
-			listMonths(reader, list)
+			LimparTerminal()
+			listarMeses(reader, lista)
 		case "4":
-			ClearTerminal()
-			updateMonthlyProfit(reader, &list)
+			LimparTerminal()
+			atualizarLucroMensal(reader, &lista)
 		case "5":
-			ClearTerminal()
-			editProduct(reader, &list)
+			LimparTerminal()
+			editarProduto(reader, &lista)
 		case "6":
-			ClearTerminal()
-			anticipateInstallments(reader, &list)
+			LimparTerminal()
+			anteciparParcelas(reader, &lista)
 		case "7":
-			ClearTerminal()
-			configureSafePercentage(reader, &list)
+			LimparTerminal()
+			configurarPorcentagemSegura(reader, &lista)
 		case "8":
-			SaveProducts(list)
+			SalvarProdutos(lista)
 			return
 		default:
-			fmt.Println("Opcão inválida.")
+			fmt.Println("Opção inválida.")
 			time.Sleep(1 * time.Second)
 		}
-		SaveProducts(list)
+		SalvarProdutos(lista)
 	}
 }

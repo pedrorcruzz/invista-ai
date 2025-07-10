@@ -1,21 +1,17 @@
-
-
 <p align="center">
   <img src="public/logo.png" alt="Logo InvistAI" width="180"/>
 </p>
 
 <h1 align="center">Versão CLI</h1>
 
-
-
 <p align="center">
   <b>Gerencie seus investimentos. Controle seus gastos. Tudo no seu terminal.</b>
 </p>
 
 ---
+
 > **🔔 Nota:** Este repositório reúne o antigo `smart-spending-checker CLI` (também criado por mim) em uma única ferramenta para **gestão de investimentos** e **controle inteligente de gastos**.  
 > Todos os recursos agora estão centralizados em um só lugar!
-
 
 ## ✨ Funcionalidades
 
@@ -159,7 +155,7 @@ Agora você pode rodar o InvistAI de qualquer diretório apenas digitando `invis
 ## 📦 Onde os Dados São Salvos
 
 - Dados de investimentos: <code>dados.json</code>
-- Dados do gestor de gastos: <code>data/products.json</code>
+- Dados do gestor de gastos: <code>data/produtos.json</code>
 
 ---
 

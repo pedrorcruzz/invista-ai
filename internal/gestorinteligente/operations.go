@@ -10,97 +10,97 @@ import (
 	"time"
 )
 
-func addProduct(reader *bufio.Reader, list *ProductList) {
-	title := "ADICIONAR PRODUTO"
+func adicionarProduto(reader *bufio.Reader, lista *ListaProdutos) {
+	titulo := "ADICIONAR PRODUTO"
 	for {
-		lines := []string{title, "", "0. Voltar ao Menu"}
-		PrintCaixa(lines)
+		linhas := []string{titulo, "", "0. Voltar ao Menu"}
+		ImprimirCaixa(linhas)
 		fmt.Print("Nome do produto (0 para voltar): ")
-		name, _ := reader.ReadString('\n')
-		name = strings.TrimSpace(name)
+		nome, _ := reader.ReadString('\n')
+		nome = strings.TrimSpace(nome)
 
-		if name == "0" {
+		if nome == "0" {
 			return
 		}
 
-		if _, err := strconv.Atoi(name); err == nil {
-			PrintCaixa([]string{"Nome inválido."})
+		if _, err := strconv.Atoi(nome); err == nil {
+			ImprimirCaixa([]string{"Nome inválido."})
 			time.Sleep(2 * time.Second)
 			continue
 		}
 
 		fmt.Print("Valor total do produto (R$) (0 para voltar): ")
-		valueStr, _ := reader.ReadString('\n')
-		valueStr = strings.TrimSpace(valueStr)
-		valueStr = strings.ReplaceAll(valueStr, ",", ".")
+		valorStr, _ := reader.ReadString('\n')
+		valorStr = strings.TrimSpace(valorStr)
+		valorStr = strings.ReplaceAll(valorStr, ",", ".")
 
-		if valueStr == "0" {
+		if valorStr == "0" {
 			return
 		}
 
-		totalValue, err := strconv.ParseFloat(valueStr, 64)
+		valorTotal, err := strconv.ParseFloat(valorStr, 64)
 		if err != nil {
-			PrintCaixa([]string{"Valor inválido."})
+			ImprimirCaixa([]string{"Valor inválido."})
 			time.Sleep(2 * time.Second)
 			continue
 		}
 
 		fmt.Print("Em quantas vezes será parcelado (0 para voltar): ")
-		installmentsStr, _ := reader.ReadString('\n')
-		installmentsStr = strings.TrimSpace(installmentsStr)
+		parcelasStr, _ := reader.ReadString('\n')
+		parcelasStr = strings.TrimSpace(parcelasStr)
 
-		if installmentsStr == "0" {
+		if parcelasStr == "0" {
 			return
 		}
 
-		installments, err := strconv.Atoi(installmentsStr)
-		if err != nil || installments < 1 {
-			PrintCaixa([]string{"Número de parcelas inválido."})
+		parcelas, err := strconv.Atoi(parcelasStr)
+		if err != nil || parcelas < 1 {
+			ImprimirCaixa([]string{"Número de parcelas inválido."})
 			time.Sleep(2 * time.Second)
 			continue
 		}
 
-		parcel := totalValue / float64(installments)
+		parcela := valorTotal / float64(parcelas)
 
-		list.Products = append(list.Products, Product{
-			Name:         name,
-			Parcel:       parcel,
-			TotalValue:   totalValue,
-			Installments: installments,
-			CreatedAt:    time.Now(),
+		lista.Produtos = append(lista.Produtos, Produto{
+			Nome:       nome,
+			Parcela:    parcela,
+			ValorTotal: valorTotal,
+			Parcelas:   parcelas,
+			CriadoEm:   time.Now(),
 		})
-		list.Month = int(time.Now().Month())
-		list.Year = time.Now().Year()
+		lista.Mes = int(time.Now().Month())
+		lista.Ano = time.Now().Year()
 
-		PrintCaixa([]string{"✅ Produto adicionado! Parcela mensal: R$" + fmt.Sprintf("%.2f", parcel)})
+		ImprimirCaixa([]string{"✅ Produto adicionado! Parcela mensal: R$" + fmt.Sprintf("%.2f", parcela)})
 		time.Sleep(2 * time.Second)
 		return
 	}
 }
 
-func removeProduct(reader *bufio.Reader, list *ProductList) {
-	title := " REMOVER PRODUTO "
-	divider := strings.Repeat("-", 40)
+func removerProduto(reader *bufio.Reader, lista *ListaProdutos) {
+	titulo := " REMOVER PRODUTO "
+	divisor := strings.Repeat("-", 40)
 
-	fmt.Println("\n" + divider)
-	fmt.Println(title)
-	fmt.Println(divider)
+	fmt.Println("\n" + divisor)
+	fmt.Println(titulo)
+	fmt.Println(divisor)
 	fmt.Println("0. Voltar ao Menu")
-	fmt.Println(divider)
+	fmt.Println(divisor)
 
-	if len(list.Products) == 0 {
+	if len(lista.Produtos) == 0 {
 		fmt.Println("Nenhum produto para remover.")
 		time.Sleep(2 * time.Second)
 		return
 	}
 
-	idx, ok := selectProductByYearMonthOrName(reader, list.Products)
+	idx, ok := selecionarProdutoPorAnoMesOuNome(reader, lista.Produtos)
 	if !ok {
 		time.Sleep(2 * time.Second)
 		return
 	}
 
-	fmt.Printf("\nTem certeza que deseja remover '%s'? (s/n): ", list.Products[idx].Name)
+	fmt.Printf("\nTem certeza que deseja remover '%s'? (s/n): ", lista.Produtos[idx].Nome)
 	confirm, _ := reader.ReadString('\n')
 	confirm = strings.TrimSpace(strings.ToLower(confirm))
 	if confirm != "s" && confirm != "sim" {
@@ -109,39 +109,39 @@ func removeProduct(reader *bufio.Reader, list *ProductList) {
 		return
 	}
 
-	list.Products = slices.Delete(list.Products, idx, idx+1)
+	lista.Produtos = slices.Delete(lista.Produtos, idx, idx+1)
 
-	fmt.Println(divider)
+	fmt.Println(divisor)
 	fmt.Println("✅ Produto removido!")
-	fmt.Println(divider)
+	fmt.Println(divisor)
 
 	time.Sleep(2 * time.Second)
 }
 
-func editProduct(reader *bufio.Reader, list *ProductList) {
-	title := "EDITAR PRODUTO"
+func editarProduto(reader *bufio.Reader, lista *ListaProdutos) {
+	titulo := "EDITAR PRODUTO"
 
-	if len(list.Products) == 0 {
-		PrintCaixa([]string{"Nenhum produto para editar."})
+	if len(lista.Produtos) == 0 {
+		ImprimirCaixa([]string{"Nenhum produto para editar."})
 		time.Sleep(2 * time.Second)
 		return
 	}
 
-	idx, ok := selectProductByYearMonthOrName(reader, list.Products)
+	idx, ok := selecionarProdutoPorAnoMesOuNome(reader, lista.Produtos)
 	if !ok {
 		time.Sleep(2 * time.Second)
 		return
 	}
 
-	p := &list.Products[idx]
+	p := &lista.Produtos[idx]
 
 	// Nome
-	PrintCaixa([]string{
-		title,
+	ImprimirCaixa([]string{
+		titulo,
 		"",
 		"0. Voltar ao Menu",
 		"",
-		"Nome atual: " + p.Name,
+		"Nome atual: " + p.Nome,
 		"Digite o novo nome (ou Enter para manter):",
 	})
 	fmt.Print(" [1mNovo nome: [0m ")
@@ -151,16 +151,16 @@ func editProduct(reader *bufio.Reader, list *ProductList) {
 		return
 	}
 	if newName != "" {
-		p.Name = newName
+		p.Nome = newName
 	}
 
 	// Valor total
-	PrintCaixa([]string{
-		title,
+	ImprimirCaixa([]string{
+		titulo,
 		"",
 		"0. Voltar ao Menu",
 		"",
-		fmt.Sprintf("Valor total atual: R$%.2f", p.TotalValue),
+		fmt.Sprintf("Valor total atual: R$%.2f", p.ValorTotal),
 		"Digite o novo valor (ou Enter para manter):",
 	})
 	fmt.Print(" [1mNovo valor: [0m ")
@@ -173,17 +173,17 @@ func editProduct(reader *bufio.Reader, list *ProductList) {
 		totalValueStr = strings.ReplaceAll(totalValueStr, ",", ".")
 		totalValue, err := strconv.ParseFloat(totalValueStr, 64)
 		if err == nil && totalValue > 0 {
-			p.TotalValue = totalValue
+			p.ValorTotal = totalValue
 		}
 	}
 
 	// Parcelas
-	PrintCaixa([]string{
-		title,
+	ImprimirCaixa([]string{
+		titulo,
 		"",
 		"0. Voltar ao Menu",
 		"",
-		fmt.Sprintf("Parcelas atuais: %d", p.Installments),
+		fmt.Sprintf("Parcelas atuais: %d", p.Parcelas),
 		"Digite o novo número de parcelas (ou Enter para manter):",
 	})
 	fmt.Print(" [1mNovas parcelas: [0m ")
@@ -195,53 +195,53 @@ func editProduct(reader *bufio.Reader, list *ProductList) {
 	if installmentsStr != "" {
 		installments, err := strconv.Atoi(installmentsStr)
 		if err == nil && installments > 0 {
-			p.Installments = installments
+			p.Parcelas = installments
 		}
 	}
 
-	p.Parcel = p.TotalValue / float64(p.Installments)
+	p.Parcela = p.ValorTotal / float64(p.Parcelas)
 
-	PrintCaixa([]string{"✅ Produto atualizado!"})
+	ImprimirCaixa([]string{"✅ Produto atualizado!"})
 	time.Sleep(2 * time.Second)
 }
 
-func anticipateInstallments(reader *bufio.Reader, list *ProductList) {
-	title := " ANTECIPAR PARCELAS "
-	divider := strings.Repeat("-", 40)
+func anteciparParcelas(reader *bufio.Reader, lista *ListaProdutos) {
+	titulo := " ANTECIPAR PARCELAS "
+	divisor := strings.Repeat("-", 40)
 
-	fmt.Println("\n" + divider)
-	fmt.Println(title)
-	fmt.Println(divider)
+	fmt.Println("\n" + divisor)
+	fmt.Println(titulo)
+	fmt.Println(divisor)
 	fmt.Println("0. Voltar ao Menu")
-	fmt.Println(divider)
+	fmt.Println(divisor)
 
-	if len(list.Products) == 0 {
+	if len(lista.Produtos) == 0 {
 		fmt.Println("Nenhum produto para antecipar.")
 		time.Sleep(2 * time.Second)
 		return
 	}
 
-	idx, ok := selectProductByYearMonthOrName(reader, list.Products)
+	idx, ok := selecionarProdutoPorAnoMesOuNome(reader, lista.Produtos)
 	if !ok {
 		time.Sleep(2 * time.Second)
 		return
 	}
 
-	p := &list.Products[idx]
+	p := &lista.Produtos[idx]
 	now := time.Now()
-	currentInstallment := getInstallmentNumber(*p, now.Year(), int(now.Month()))
+	currentInstallment := getNumeroParcela(*p, now.Year(), int(now.Month()))
 
-	if currentInstallment >= p.Installments {
+	if currentInstallment >= p.Parcelas {
 		fmt.Println("Este produto já foi totalmente pago.")
 		time.Sleep(2 * time.Second)
 		return
 	}
 
-	remainingInstallments := p.Installments - currentInstallment
-	remainingValue := p.Parcel * float64(remainingInstallments)
+	remainingInstallments := p.Parcelas - currentInstallment
+	remainingValue := p.Parcela * float64(remainingInstallments)
 
-	fmt.Printf("Produto: %s\n", p.Name)
-	fmt.Printf("Parcela atual: %d/%d\n", currentInstallment, p.Installments)
+	fmt.Printf("Produto: %s\n", p.Nome)
+	fmt.Printf("Parcela atual: %d/%d\n", currentInstallment, p.Parcelas)
 	fmt.Printf("Valor restante: R$%.2f\n", remainingValue)
 	fmt.Printf("Parcelas restantes: %d\n", remainingInstallments)
 
@@ -260,35 +260,35 @@ func anticipateInstallments(reader *bufio.Reader, list *ProductList) {
 		return
 	}
 
-	anticipateValue := p.Parcel * float64(anticipateCount)
+	anticipateValue := p.Parcela * float64(anticipateCount)
 	newRemainingInstallments := remainingInstallments - anticipateCount
 
 	if newRemainingInstallments > 0 {
 		newParcel := (remainingValue - anticipateValue) / float64(newRemainingInstallments)
-		p.Parcel = newParcel
-		p.Installments = currentInstallment + newRemainingInstallments
+		p.Parcela = newParcel
+		p.Parcelas = currentInstallment + newRemainingInstallments
 	} else {
-		p.Installments = currentInstallment
+		p.Parcelas = currentInstallment
 	}
 
-	fmt.Println(divider)
+	fmt.Println(divisor)
 	fmt.Printf("✅ Parcelas antecipadas! Valor antecipado: R$%.2f\n", anticipateValue)
-	fmt.Println(divider)
+	fmt.Println(divisor)
 
 	time.Sleep(2 * time.Second)
 }
 
-func updateMonthlyProfit(reader *bufio.Reader, list *ProductList) {
-	title := " ATUALIZAR LUCRO MENSAL "
-	divider := strings.Repeat("-", 40)
+func atualizarLucroMensal(reader *bufio.Reader, lista *ListaProdutos) {
+	titulo := " ATUALIZAR LUCRO MENSAL "
+	divisor := strings.Repeat("-", 40)
 
-	fmt.Println("\n" + divider)
-	fmt.Println(title)
-	fmt.Println(divider)
+	fmt.Println("\n" + divisor)
+	fmt.Println(titulo)
+	fmt.Println(divisor)
 	fmt.Println("0. Voltar ao Menu")
-	fmt.Println(divider)
+	fmt.Println(divisor)
 
-	fmt.Printf("Lucro mensal atual: R$%.2f\n", list.MonthlyProfit)
+	fmt.Printf("Lucro mensal atual: R$%.2f\n", lista.LucroMensal)
 	fmt.Print("Novo lucro mensal (R$): ")
 	profitStr, _ := reader.ReadString('\n')
 	profitStr = strings.TrimSpace(profitStr)
@@ -305,26 +305,26 @@ func updateMonthlyProfit(reader *bufio.Reader, list *ProductList) {
 		return
 	}
 
-	list.MonthlyProfit = profit
+	lista.LucroMensal = profit
 
-	fmt.Println(divider)
+	fmt.Println(divisor)
 	fmt.Printf("✅ Lucro mensal atualizado para R$%.2f!\n", profit)
-	fmt.Println(divider)
+	fmt.Println(divisor)
 
 	time.Sleep(2 * time.Second)
 }
 
-func configureSafePercentage(reader *bufio.Reader, list *ProductList) {
-	title := " CONFIGURAR PORCENTAGEM SEGURA "
-	divider := strings.Repeat("-", 40)
+func configurarPorcentagemSegura(reader *bufio.Reader, lista *ListaProdutos) {
+	titulo := " CONFIGURAR PORCENTAGEM SEGURA "
+	divisor := strings.Repeat("-", 40)
 
-	fmt.Println("\n" + divider)
-	fmt.Println(title)
-	fmt.Println(divider)
+	fmt.Println("\n" + divisor)
+	fmt.Println(titulo)
+	fmt.Println(divisor)
 	fmt.Println("0. Voltar ao Menu")
-	fmt.Println(divider)
+	fmt.Println(divisor)
 
-	fmt.Printf("Porcentagem segura atual: %.0f%%\n", list.SafePercentage)
+	fmt.Printf("Porcentagem segura atual: %.0f%%\n", lista.PorcentagemSegura)
 	fmt.Print("Nova porcentagem segura (%): ")
 	percentageStr, _ := reader.ReadString('\n')
 	percentageStr = strings.TrimSpace(percentageStr)
@@ -341,37 +341,37 @@ func configureSafePercentage(reader *bufio.Reader, list *ProductList) {
 		return
 	}
 
-	list.SafePercentage = percentage
+	lista.PorcentagemSegura = percentage
 
-	fmt.Println(divider)
+	fmt.Println(divisor)
 	fmt.Printf("✅ Porcentagem segura atualizada para %.0f%%!\n", percentage)
-	fmt.Println(divider)
+	fmt.Println(divisor)
 
 	time.Sleep(2 * time.Second)
 }
 
-func listMonths(reader *bufio.Reader, list ProductList) {
-	title := "LISTAR MESES"
-	lines := []string{title, ""}
+func listarMeses(reader *bufio.Reader, lista ListaProdutos) {
+	titulo := "LISTAR MESES"
+	linhas := []string{titulo, ""}
 
-	byYearMonth := mapProductsByYearMonth(list.Products)
-	if len(byYearMonth) == 0 {
-		lines = append(lines, "Nenhum produto cadastrado.")
-		PrintCaixa(lines)
+	produtosPorAnoMes := mapearProdutosPorAnoMes(lista.Produtos)
+	if len(produtosPorAnoMes) == 0 {
+		linhas = append(linhas, "Nenhum produto cadastrado.")
+		ImprimirCaixa(linhas)
 		return
 	}
 
-	years := make([]int, 0, len(byYearMonth))
-	for y := range byYearMonth {
-		years = append(years, y)
+	anos := make([]int, 0, len(produtosPorAnoMes))
+	for y := range produtosPorAnoMes {
+		anos = append(anos, y)
 	}
-	sort.Ints(years)
+	sort.Ints(anos)
 
-	lines = append(lines, "Selecione o ano (0 para voltar):")
-	for i, y := range years {
-		lines = append(lines, fmt.Sprintf("%d. %d", i+1, y))
+	linhas = append(linhas, "Selecione o ano (0 para voltar):")
+	for i, y := range anos {
+		linhas = append(linhas, fmt.Sprintf("%d. %d", i+1, y))
 	}
-	PrintCaixa(lines)
+	ImprimirCaixa(linhas)
 	fmt.Print("Ano: ")
 	yearStr, _ := reader.ReadString('\n')
 	yearStr = strings.TrimSpace(yearStr)
@@ -381,25 +381,25 @@ func listMonths(reader *bufio.Reader, list ProductList) {
 	}
 
 	yearIdx, err := strconv.Atoi(yearStr)
-	if err != nil || yearIdx < 1 || yearIdx > len(years) {
-		PrintCaixa([]string{"Ano inválido."})
+	if err != nil || yearIdx < 1 || yearIdx > len(anos) {
+		ImprimirCaixa([]string{"Ano inválido."})
 		time.Sleep(2 * time.Second)
 		return
 	}
-	year := years[yearIdx-1]
+	year := anos[yearIdx-1]
 
-	monthsMap := byYearMonth[year]
-	months := make([]int, 0, len(monthsMap))
-	for m := range monthsMap {
-		months = append(months, m)
+	mesesMap := produtosPorAnoMes[year]
+	meses := make([]int, 0, len(mesesMap))
+	for m := range mesesMap {
+		meses = append(meses, m)
 	}
-	sort.Ints(months)
+	sort.Ints(meses)
 
 	monthLines := []string{fmt.Sprintf("Meses de %d:", year)}
-	for i, m := range months {
-		monthLines = append(monthLines, fmt.Sprintf("%d. %s", i+1, monthNames[m-1]))
+	for i, m := range meses {
+		monthLines = append(monthLines, fmt.Sprintf("%d. %s", i+1, nomesDosMeses[m-1]))
 	}
-	PrintCaixa(monthLines)
+	ImprimirCaixa(monthLines)
 	fmt.Print("Mês: ")
 	monthStr, _ := reader.ReadString('\n')
 	monthStr = strings.TrimSpace(monthStr)
@@ -409,16 +409,16 @@ func listMonths(reader *bufio.Reader, list ProductList) {
 	}
 
 	monthIdx, err := strconv.Atoi(monthStr)
-	if err != nil || monthIdx < 1 || monthIdx > len(months) {
-		PrintCaixa([]string{"Mês inválido."})
+	if err != nil || monthIdx < 1 || monthIdx > len(meses) {
+		ImprimirCaixa([]string{"Mês inválido."})
 		time.Sleep(2 * time.Second)
 		return
 	}
-	month := months[monthIdx-1]
+	month := meses[monthIdx-1]
 
-	prodIndexes := monthsMap[month]
+	prodIndexes := mesesMap[month]
 	if len(prodIndexes) == 0 {
-		PrintCaixa([]string{fmt.Sprintf("Nenhum produto encontrado para %s/%d.", monthNames[month-1], year)})
+		ImprimirCaixa([]string{fmt.Sprintf("Nenhum produto encontrado para %s/%d.", nomesDosMeses[month-1], year)})
 		time.Sleep(2 * time.Second)
 		return
 	}
@@ -432,38 +432,38 @@ func listMonths(reader *bufio.Reader, list ProductList) {
 		}
 	}
 
-	productsTitle := fmt.Sprintf("PRODUTOS DE %s/%d", monthNames[month-1], year)
+	productsTitle := fmt.Sprintf("PRODUTOS DE %s/%d", nomesDosMeses[month-1], year)
 	productLines := []string{productsTitle, ""}
 	for i, idx := range uniqueIndexes {
-		p := list.Products[idx]
-		installmentNumber := getInstallmentNumber(p, year, month)
+		p := lista.Produtos[idx]
+		installmentNumber := getNumeroParcela(p, year, month)
 		productLines = append(productLines, fmt.Sprintf("%d. %s | Total: R$%.2f | Parcela: R$%.2f (%d/%d)",
-			i+1, p.Name, p.TotalValue, p.Parcel, installmentNumber, p.Installments))
+			i+1, p.Nome, p.ValorTotal, p.Parcela, installmentNumber, p.Parcelas))
 	}
-	PrintCaixa(productLines)
+	ImprimirCaixa(productLines)
 
 	fmt.Print("\nPressione Enter para voltar...")
 	reader.ReadString('\n')
 }
 
-func selectProductByYearMonthOrName(reader *bufio.Reader, products []Product) (int, bool) {
-	byYearMonth := mapProductsByYearMonth(products)
-	if len(byYearMonth) == 0 {
-		PrintCaixa([]string{"Nenhum produto cadastrado."})
+func selecionarProdutoPorAnoMesOuNome(reader *bufio.Reader, produtos []Produto) (int, bool) {
+	produtosPorAnoMes := mapearProdutosPorAnoMes(produtos)
+	if len(produtosPorAnoMes) == 0 {
+		ImprimirCaixa([]string{"Nenhum produto cadastrado."})
 		return -1, false
 	}
 
-	years := make([]int, 0, len(byYearMonth))
-	for y := range byYearMonth {
-		years = append(years, y)
+	anos := make([]int, 0, len(produtosPorAnoMes))
+	for y := range produtosPorAnoMes {
+		anos = append(anos, y)
 	}
-	sort.Ints(years)
+	sort.Ints(anos)
 
-	lines := []string{"Selecione o ano (0 para voltar):"}
-	for i, y := range years {
-		lines = append(lines, fmt.Sprintf("%d. %d", i+1, y))
+	linhas := []string{"Selecione o ano (0 para voltar):"}
+	for i, y := range anos {
+		linhas = append(linhas, fmt.Sprintf("%d. %d", i+1, y))
 	}
-	PrintCaixa(lines)
+	ImprimirCaixa(linhas)
 	fmt.Print("Ano: ")
 	yearStr, _ := reader.ReadString('\n')
 	yearStr = strings.TrimSpace(yearStr)
@@ -472,24 +472,24 @@ func selectProductByYearMonthOrName(reader *bufio.Reader, products []Product) (i
 		return -1, false
 	}
 	yearIdx, err := strconv.Atoi(yearStr)
-	if err != nil || yearIdx < 1 || yearIdx > len(years) {
-		PrintCaixa([]string{"Ano inválido."})
+	if err != nil || yearIdx < 1 || yearIdx > len(anos) {
+		ImprimirCaixa([]string{"Ano inválido."})
 		return -1, false
 	}
-	year := years[yearIdx-1]
+	year := anos[yearIdx-1]
 
-	monthsMap := byYearMonth[year]
-	months := make([]int, 0, len(monthsMap))
-	for m := range monthsMap {
-		months = append(months, m)
+	mesesMap := produtosPorAnoMes[year]
+	meses := make([]int, 0, len(mesesMap))
+	for m := range mesesMap {
+		meses = append(meses, m)
 	}
-	sort.Ints(months)
+	sort.Ints(meses)
 
 	monthLines := []string{fmt.Sprintf("Meses de %d:", year)}
-	for i, m := range months {
-		monthLines = append(monthLines, fmt.Sprintf("%d. %s", i+1, monthNames[m-1]))
+	for i, m := range meses {
+		monthLines = append(monthLines, fmt.Sprintf("%d. %s", i+1, nomesDosMeses[m-1]))
 	}
-	PrintCaixa(monthLines)
+	ImprimirCaixa(monthLines)
 	fmt.Print("Mês: ")
 	monthStr, _ := reader.ReadString('\n')
 	monthStr = strings.TrimSpace(monthStr)
@@ -498,13 +498,13 @@ func selectProductByYearMonthOrName(reader *bufio.Reader, products []Product) (i
 		return -1, false
 	}
 	monthIdx, err := strconv.Atoi(monthStr)
-	if err != nil || monthIdx < 1 || monthIdx > len(months) {
-		PrintCaixa([]string{"Mês inválido."})
+	if err != nil || monthIdx < 1 || monthIdx > len(meses) {
+		ImprimirCaixa([]string{"Mês inválido."})
 		return -1, false
 	}
-	month := months[monthIdx-1]
+	month := meses[monthIdx-1]
 
-	prodIndexes := monthsMap[month]
+	prodIndexes := mesesMap[month]
 	uniqueIndexes := make([]int, 0)
 	seen := make(map[int]bool)
 	for _, idx := range prodIndexes {
@@ -516,11 +516,11 @@ func selectProductByYearMonthOrName(reader *bufio.Reader, products []Product) (i
 
 	productLines := []string{"Selecione o produto (número ou nome, 0 para voltar):"}
 	for i, idx := range uniqueIndexes {
-		p := products[idx]
+		p := produtos[idx]
 		productLines = append(productLines, fmt.Sprintf("%d - %s | Total: R$%.2f | Parcelas: %d | Adicionado em: %s",
-			i+1, p.Name, p.TotalValue, p.Installments, p.CreatedAt.Format("02/01/2006")))
+			i+1, p.Nome, p.ValorTotal, p.Parcelas, p.CriadoEm.Format("02/01/2006")))
 	}
-	PrintCaixa(productLines)
+	ImprimirCaixa(productLines)
 	fmt.Print("Produto: ")
 	prodStr, _ := reader.ReadString('\n')
 	prodStr = strings.TrimSpace(prodStr)
@@ -536,10 +536,10 @@ func selectProductByYearMonthOrName(reader *bufio.Reader, products []Product) (i
 	}
 	// Tenta por nome
 	for _, idx := range uniqueIndexes {
-		if strings.EqualFold(products[idx].Name, prodStr) {
+		if strings.EqualFold(produtos[idx].Nome, prodStr) {
 			return idx, true
 		}
 	}
-	PrintCaixa([]string{"Produto inválido."})
+	ImprimirCaixa([]string{"Produto inválido."})
 	return -1, false
 }

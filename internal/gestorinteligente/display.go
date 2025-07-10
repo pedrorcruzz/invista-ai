@@ -7,139 +7,137 @@ import (
 	"time"
 )
 
-func showSummary(list ProductList) {
-	var totalParcel float64
+func mostrarResumo(lista ListaProdutos) {
+	var totalParcela float64
 
-	now := time.Now()
-	targetYear := now.Year()
-	targetMonth := int(now.Month())
+	agora := time.Now()
+	anoAlvo := agora.Year()
+	mesAlvo := int(agora.Month())
 
-	var activeProducts []Product
+	var produtosAtivos []Produto
 
-	for _, p := range list.Products {
-		startYear, startMonth := p.CreatedAt.Year(), int(p.CreatedAt.Month())
-		endDate := p.CreatedAt.AddDate(0, p.Installments-1, 0)
-		endYear, endMonth := endDate.Year(), int(endDate.Month())
+	for _, p := range lista.Produtos {
+		anoInicio, mesInicio := p.CriadoEm.Year(), int(p.CriadoEm.Month())
+		dataFim := p.CriadoEm.AddDate(0, p.Parcelas-1, 0)
+		anoFim, mesFim := dataFim.Year(), int(dataFim.Month())
 
-		if (targetYear > startYear || (targetYear == startYear && targetMonth >= startMonth)) &&
-			(targetYear < endYear || (targetYear == endYear && targetMonth <= endMonth)) {
-			activeProducts = append(activeProducts, p)
-			totalParcel += p.Parcel
+		if (anoAlvo > anoInicio || (anoAlvo == anoInicio && mesAlvo >= mesInicio)) &&
+			(anoAlvo < anoFim || (anoAlvo == anoFim && mesAlvo <= mesFim)) {
+			produtosAtivos = append(produtosAtivos, p)
+			totalParcela += p.Parcela
 		}
 	}
 
-	usedPercent := 0.0
-	leftPercent := 100.0
+	percentualUsado := 0.0
+	percentualRestante := 100.0
 	valorReinvestir := 0.0
 
-	if list.MonthlyProfit > 0 {
-		usedPercent = (totalParcel / list.MonthlyProfit) * 100
-		leftPercent = 100 - usedPercent
-		valorReinvestir = (leftPercent / 100) * list.MonthlyProfit
+	if lista.LucroMensal > 0 {
+		percentualUsado = (totalParcela / lista.LucroMensal) * 100
+		percentualRestante = 100 - percentualUsado
+		valorReinvestir = (percentualRestante / 100) * lista.LucroMensal
 	}
 
-	spendablePercent := 100.0 - list.SafePercentage
-	spendableValue := (spendablePercent / 100) * list.MonthlyProfit
-	remainingSpendableValue := spendableValue - totalParcel
-	if remainingSpendableValue < 0 {
-		remainingSpendableValue = 0
+	percentualGastar := 100.0 - lista.PorcentagemSegura
+	valorGastar := (percentualGastar / 100) * lista.LucroMensal
+	valorRestanteGastar := valorGastar - totalParcela
+	if valorRestanteGastar < 0 {
+		valorRestanteGastar = 0
 	}
 
-	monthName := monthNames[targetMonth-1]
+	nomeMes := nomesMeses[mesAlvo-1]
 
-	summaryDivider := strings.Repeat("-", 60)
-	title := fmt.Sprintf(" RESUMO DO MÊS (%02d/%d - %s) ", targetMonth, targetYear, monthName)
+	divisorResumo := strings.Repeat("-", 60)
+	titulo := fmt.Sprintf(" RESUMO DO MÊS (%02d/%d - %s) ", mesAlvo, anoAlvo, nomeMes)
 
-	fmt.Println("\n" + summaryDivider)
-	fmt.Println(title)
-	fmt.Println(summaryDivider)
+	fmt.Println("\n" + divisorResumo)
+	fmt.Println(titulo)
+	fmt.Println(divisorResumo)
 
-	fmt.Printf("Lucro mensal: R$%.2f\n", list.MonthlyProfit)
-	fmt.Printf("Total de parcelas: R$%.2f\n", totalParcel)
-	fmt.Printf("Usado: %.2f%% | Para reinvestir: %.2f%% (R$%.2f)\n", usedPercent, leftPercent, valorReinvestir)
-	fmt.Printf("Porcentagem segura configurada: %.0f%%\n", list.SafePercentage)
+	fmt.Printf("Lucro mensal: R$%.2f\n", lista.LucroMensal)
+	fmt.Printf("Total de parcelas: R$%.2f\n", totalParcela)
+	fmt.Printf("Usado: %.2f%% | Para reinvestir: %.2f%% (R$%.2f)\n", percentualUsado, percentualRestante, valorReinvestir)
+	fmt.Printf("Porcentagem segura configurada: %.0f%%\n", lista.PorcentagemSegura)
 	fmt.Printf("Disponível para gastos: %.0f%% (R$%.2f) | Restante: R$%.2f\n",
-		spendablePercent, spendableValue, remainingSpendableValue)
+		percentualGastar, valorGastar, valorRestanteGastar)
 
 	fmt.Println("")
-	fmt.Println(summaryDivider)
+	fmt.Println(divisorResumo)
 
-	if leftPercent >= list.SafePercentage {
+	if percentualRestante >= lista.PorcentagemSegura {
 		fmt.Println("✅ Você pode usar parte do seu lucro para pagar as parcelas!")
 	} else {
 		fmt.Println("❌ Não recomendado. Crie uma caixinha separada para alguns produtos!")
-		suggestProductsToSeparate(activeProducts, list.MonthlyProfit, list.SafePercentage)
+		sugerirProdutosParaSeparar(produtosAtivos, lista.LucroMensal, lista.PorcentagemSegura)
 	}
 
-	if len(activeProducts) > 0 {
-		productsTitle := " PRODUTOS ATIVOS NESTE MÊS "
-		fmt.Println("\n" + summaryDivider)
-		fmt.Println(productsTitle)
-		fmt.Println(summaryDivider)
+	if len(produtosAtivos) > 0 {
+		tituloProdutos := " PRODUTOS ATIVOS NESTE MÊS "
+		fmt.Println("\n" + divisorResumo)
+		fmt.Println(tituloProdutos)
+		fmt.Println(divisorResumo)
 
-		for i, p := range activeProducts {
-			installmentNumber := getInstallmentNumber(p, targetYear, targetMonth)
+		for i, p := range produtosAtivos {
+			numeroParcela := obterNumeroParcela(p, anoAlvo, mesAlvo)
 			fmt.Printf("%d. %s | Total: R$%.2f | Parcela: R$%.2f (%d/%d)\n",
-				i+1, p.Name, p.TotalValue, p.Parcel, installmentNumber, p.Installments)
+				i+1, p.Nome, p.ValorTotal, p.Parcela, numeroParcela, p.Parcelas)
 		}
-		fmt.Println(summaryDivider)
+		fmt.Println(divisorResumo)
 	}
 }
 
-func suggestProductsToSeparate(products []Product, monthlyProfit float64, safePercentage float64) {
-	if len(products) == 0 {
+func sugerirProdutosParaSeparar(produtos []Produto, lucroMensal float64, porcentagemSegura float64) {
+	if len(produtos) == 0 {
 		return
 	}
-
-	type ProductWithIndex struct {
-		Index   int
-		Product Product
+	type ProdutoComIndice struct {
+		Indice  int
+		Produto Produto
 	}
 
-	productsWithIndex := make([]ProductWithIndex, len(products))
-	for i, p := range products {
-		productsWithIndex[i] = ProductWithIndex{i, p}
+	produtosComIndice := make([]ProdutoComIndice, len(produtos))
+	for i, p := range produtos {
+		produtosComIndice[i] = ProdutoComIndice{i, p}
 	}
 
-	sort.Slice(productsWithIndex, func(i, j int) bool {
-		return productsWithIndex[i].Product.Parcel > productsWithIndex[j].Product.Parcel
+	sort.Slice(produtosComIndice, func(i, j int) bool {
+		return produtosComIndice[i].Produto.Parcela > produtosComIndice[j].Produto.Parcela
 	})
 
-	var totalParcel float64
-	for _, p := range products {
-		totalParcel += p.Parcel
+	totalParcela := 0.0
+	for _, p := range produtos {
+		totalParcela += p.Parcela
 	}
-
-	targetParcel := totalParcel - (monthlyProfit * (safePercentage / 100))
-	if targetParcel <= 0 {
+	targetParcela := totalParcela - (lucroMensal * (porcentagemSegura / 100))
+	if targetParcela <= 0 {
 		return
 	}
 
-	var suggestedProducts []Product
-	var suggestedParcelSum float64
+	var produtosSugeridos []Produto
+	var somaParcelasSugeridas float64
 
-	for _, pwi := range productsWithIndex {
-		if suggestedParcelSum >= targetParcel {
+	for _, pci := range produtosComIndice {
+		if somaParcelasSugeridas >= targetParcela {
 			break
 		}
-		suggestedProducts = append(suggestedProducts, pwi.Product)
-		suggestedParcelSum += pwi.Product.Parcel
+		produtosSugeridos = append(produtosSugeridos, pci.Produto)
+		somaParcelasSugeridas += pci.Produto.Parcela
 	}
 
-	suggestionDivider := strings.Repeat("-", 50)
+	divisorSugestao := strings.Repeat("-", 50)
 
-	if len(suggestedProducts) == 1 {
-		fmt.Println(suggestionDivider)
+	if len(produtosSugeridos) == 1 {
+		fmt.Println(divisorSugestao)
 		fmt.Printf("💡 Sugestão: Separe o produto '%s' (Parcela: R$%.2f) em uma caixinha separada.\n",
-			suggestedProducts[0].Name, suggestedProducts[0].Parcel)
-		fmt.Println(suggestionDivider)
-	} else if len(suggestedProducts) > 1 {
-		fmt.Println(suggestionDivider)
+			produtosSugeridos[0].Nome, produtosSugeridos[0].Parcela)
+		fmt.Println(divisorSugestao)
+	} else if len(produtosSugeridos) > 1 {
+		fmt.Println(divisorSugestao)
 		fmt.Println("💡 Sugestão: Separe os seguintes produtos em uma caixinha:")
-		for i, p := range suggestedProducts {
-			fmt.Printf("  %d. %s (Parcela: R$%.2f)\n", i+1, p.Name, p.Parcel)
+		for i, p := range produtosSugeridos {
+			fmt.Printf("  %d. %s (Parcela: R$%.2f)\n", i+1, p.Nome, p.Parcela)
 		}
-		fmt.Printf("  Total a separar: R$%.2f\n", suggestedParcelSum)
-		fmt.Println(suggestionDivider)
+		fmt.Printf("  Total a separar: R$%.2f\n", somaParcelasSugeridas)
+		fmt.Println(divisorSugestao)
 	}
 }
