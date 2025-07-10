@@ -1,6 +1,4 @@
-<!--
-  NOTA: Este repositório unifica o antigo smart-spending-checker CLI em uma única ferramenta para gerenciar investimentos e controle inteligente de gastos. Todos os recursos agora estão em um só lugar!
--->
+
 
 <p align="center">
   <img src="public/logo.png" alt="Logo InvistAI" width="180"/>
@@ -8,11 +6,16 @@
 
 <h1 align="center">Versão CLI</h1>
 
+
+
 <p align="center">
   <b>Gerencie seus investimentos. Controle seus gastos. Tudo no seu terminal.</b>
 </p>
 
 ---
+> **🔔 Nota:** Este repositório unifica o antigo `smart-spending-checker CLI` em uma única ferramenta para **gerenciar investimentos** e **controle inteligente de gastos**.  
+> Todos os recursos agora estão em um só lugar!
+
 
 ## ✨ Funcionalidades
 
