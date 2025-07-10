@@ -32,8 +32,8 @@
 ### 1. Clone o Repositório
 
 ```sh
-git clone https://github.com/pedrorcruz/invista-ai
-cd invista-ai
+git clone https://github.com/pedrorcruz/invista-ai-cli
+cd invista-ai-cli
 ```
 
 ### 2. Rodar com Go
