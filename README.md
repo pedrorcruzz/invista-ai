@@ -13,8 +13,8 @@
 </p>
 
 ---
-> **🔔 Nota:** Este repositório unifica o antigo `smart-spending-checker CLI` em uma única ferramenta para **gerenciar investimentos** e **controle inteligente de gastos**.  
-> Todos os recursos agora estão em um só lugar!
+> **🔔 Nota:** Este repositório reúne o antigo `smart-spending-checker CLI` (também criado por mim) em uma única ferramenta para **gestão de investimentos** e **controle inteligente de gastos**.  
+> Todos os recursos agora estão centralizados em um só lugar!
 
 
 ## ✨ Funcionalidades
