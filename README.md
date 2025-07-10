@@ -163,8 +163,7 @@ Agora você pode rodar o InvistAI de qualquer diretório apenas digitando `invis
 ## 📝 Licença & Créditos
 
 - Licença MIT
-- Criado por [phrosa](https://github.com/phrosa)
-- Lógica do gestor inteligente baseada no antigo <code>smart-spending-checker</code>, agora totalmente integrada aqui.
+- Criado por [Pedro Rosa](https://github.com/pedrorcruzz)
 
 ---
 
