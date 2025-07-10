@@ -119,17 +119,10 @@ func removeProduct(reader *bufio.Reader, list *ProductList) {
 }
 
 func editProduct(reader *bufio.Reader, list *ProductList) {
-	title := " EDITAR PRODUTO "
-	divider := strings.Repeat("-", 40)
-
-	fmt.Println("\n" + divider)
-	fmt.Println(title)
-	fmt.Println(divider)
-	fmt.Println("0. Voltar ao Menu")
-	fmt.Println(divider)
+	title := "EDITAR PRODUTO"
 
 	if len(list.Products) == 0 {
-		fmt.Println("Nenhum produto para editar.")
+		PrintCaixa([]string{"Nenhum produto para editar."})
 		time.Sleep(2 * time.Second)
 		return
 	}
@@ -142,26 +135,40 @@ func editProduct(reader *bufio.Reader, list *ProductList) {
 
 	p := &list.Products[idx]
 
-	fmt.Printf("Nome atual: %s. Novo nome (ou Enter para manter, 0 para voltar): ", p.Name)
+	// Nome
+	PrintCaixa([]string{
+		title,
+		"",
+		"0. Voltar ao Menu",
+		"",
+		"Nome atual: " + p.Name,
+		"Digite o novo nome (ou Enter para manter):",
+	})
+	fmt.Print(" [1mNovo nome: [0m ")
 	newName, _ := reader.ReadString('\n')
 	newName = strings.TrimSpace(newName)
-
 	if newName == "0" {
 		return
 	}
-
 	if newName != "" {
 		p.Name = newName
 	}
 
-	fmt.Printf("Valor total atual: R$%.2f. Novo valor (ou Enter para manter, 0 para voltar): ", p.TotalValue)
+	// Valor total
+	PrintCaixa([]string{
+		title,
+		"",
+		"0. Voltar ao Menu",
+		"",
+		fmt.Sprintf("Valor total atual: R$%.2f", p.TotalValue),
+		"Digite o novo valor (ou Enter para manter):",
+	})
+	fmt.Print(" [1mNovo valor: [0m ")
 	totalValueStr, _ := reader.ReadString('\n')
 	totalValueStr = strings.TrimSpace(totalValueStr)
-
 	if totalValueStr == "0" {
 		return
 	}
-
 	if totalValueStr != "" {
 		totalValueStr = strings.ReplaceAll(totalValueStr, ",", ".")
 		totalValue, err := strconv.ParseFloat(totalValueStr, 64)
@@ -170,14 +177,21 @@ func editProduct(reader *bufio.Reader, list *ProductList) {
 		}
 	}
 
-	fmt.Printf("Parcelas atuais: %d. Novo número de parcelas (ou Enter para manter, 0 para voltar): ", p.Installments)
+	// Parcelas
+	PrintCaixa([]string{
+		title,
+		"",
+		"0. Voltar ao Menu",
+		"",
+		fmt.Sprintf("Parcelas atuais: %d", p.Installments),
+		"Digite o novo número de parcelas (ou Enter para manter):",
+	})
+	fmt.Print(" [1mNovas parcelas: [0m ")
 	installmentsStr, _ := reader.ReadString('\n')
 	installmentsStr = strings.TrimSpace(installmentsStr)
-
 	if installmentsStr == "0" {
 		return
 	}
-
 	if installmentsStr != "" {
 		installments, err := strconv.Atoi(installmentsStr)
 		if err == nil && installments > 0 {
@@ -187,10 +201,7 @@ func editProduct(reader *bufio.Reader, list *ProductList) {
 
 	p.Parcel = p.TotalValue / float64(p.Installments)
 
-	fmt.Println(divider)
-	fmt.Println("✅ Produto atualizado!")
-	fmt.Println(divider)
-
+	PrintCaixa([]string{"✅ Produto atualizado!"})
 	time.Sleep(2 * time.Second)
 }
 

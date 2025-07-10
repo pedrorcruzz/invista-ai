@@ -122,16 +122,22 @@ func AdicionarOuEditarMes(dados *Dados, scanner *bufio.Scanner) {
 	m := dados.Anos[ano][mes]
 	if m != (Mes{}) {
 		for {
-			fmt.Println("\n--- EDITAR CAMPOS ---")
-			fmt.Printf("1. Aporte RF (atual: %s)\n", FormatFloatBR(m.AporteRF))
-			fmt.Printf("2. Aporte FIIs (atual: %s)\n", FormatFloatBR(m.AporteFIIs))
-			fmt.Printf("3. Saída (atual: %s)\n", FormatFloatBR(m.Saida))
-			fmt.Printf("4. Valor Bruto RF (atual: %s)\n", FormatFloatBR(m.ValorBrutoRF))
-			fmt.Printf("5. Valor Líquido RF (atual: %s)\n", FormatFloatBR(m.ValorLiquidoRF))
-			fmt.Printf("6. Valor Líquido FIIs (atual: %s)\n", FormatFloatBR(m.ValorLiquidoFIIs))
-			fmt.Printf("7. Lucro Retirado (atual: %s)\n", FormatFloatBR(m.LucroRetirado))
-			fmt.Printf("8. Lucro Líquido FIIs (atual: %s)\n", FormatFloatBR(m.LucroLiquidoFIIs))
-			fmt.Println("0. Sair da edição")
+			// Menu de edição em caixinha
+			lines := []string{
+				"EDITAR CAMPOS",
+				"",
+				"0. Sair da edição",
+				"",
+				fmt.Sprintf("1. Aporte RF (atual: %s)", FormatFloatBR(m.AporteRF)),
+				fmt.Sprintf("2. Aporte FIIs (atual: %s)", FormatFloatBR(m.AporteFIIs)),
+				fmt.Sprintf("3. Saída (atual: %s)", FormatFloatBR(m.Saida)),
+				fmt.Sprintf("4. Valor Bruto RF (atual: %s)", FormatFloatBR(m.ValorBrutoRF)),
+				fmt.Sprintf("5. Valor Líquido RF (atual: %s)", FormatFloatBR(m.ValorLiquidoRF)),
+				fmt.Sprintf("6. Valor Líquido FIIs (atual: %s)", FormatFloatBR(m.ValorLiquidoFIIs)),
+				fmt.Sprintf("7. Lucro Retirado (atual: %s)", FormatFloatBR(m.LucroRetirado)),
+				fmt.Sprintf("8. Lucro Líquido FIIs (atual: %s)", FormatFloatBR(m.LucroLiquidoFIIs)),
+			}
+			PrintCaixa(lines)
 			opcao := InputBox("Escolha:", scanner)
 			switch opcao {
 			case "1":
@@ -160,10 +166,10 @@ func AdicionarOuEditarMes(dados *Dados, scanner *bufio.Scanner) {
 				m.LucroLiquidoFIIs, _ = ParseFloatBR(valor)
 			case "0":
 				dados.Anos[ano][mes] = m
-				fmt.Println("Edição concluída.")
+				PrintCaixa([]string{"✅ Edição concluída!"})
 				return
 			default:
-				fmt.Println("Opção inválida.")
+				PrintCaixa([]string{"❌ Opção inválida."})
 			}
 			dados.Anos[ano][mes] = m
 		}
@@ -186,7 +192,27 @@ func AdicionarOuEditarMes(dados *Dados, scanner *bufio.Scanner) {
 		LucroRetirado:    lucroRetirado,
 		LucroLiquidoFIIs: lucroLiquidoFIIs,
 	}
-	fmt.Println("Dados adicionados com sucesso!")
+	PrintCaixa([]string{"✅ Dados adicionados com sucesso!"})
+}
+
+// PrintCaixa exibe uma caixinha com as linhas fornecidas
+func PrintCaixa(lines []string) {
+	maxLen := 0
+	for _, l := range lines {
+		if len(l) > maxLen {
+			maxLen = len(l)
+		}
+	}
+	if maxLen < 60 {
+		maxLen = 60
+	}
+	linhaTopo := "╔" + repeatStr("═", maxLen+2) + "╗"
+	linhaBase := "╚" + repeatStr("═", maxLen+2) + "╝"
+	fmt.Println(linhaTopo)
+	for _, l := range lines {
+		fmt.Printf("║ %-*s ║\n", maxLen, l)
+	}
+	fmt.Println(linhaBase)
 }
 
 // ParseFloatBR converte string com vírgula ou ponto para float64

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -103,6 +104,50 @@ func ShowGestorMenu() {
 
 	if list.SafePercentage == 0 {
 		list.SafePercentage = 70
+	}
+
+	// Verificar se é a primeira vez e o lucro mensal não foi definido
+	if list.MonthlyProfit == 0 {
+		ClearTerminal()
+		PrintCaixa([]string{
+			"🎯 CONFIGURAÇÃO INICIAL",
+			"",
+			"Bem-vindo ao Gestor Inteligente de Gastos!",
+			"",
+			"Para começar a usar o sistema, precisamos definir",
+			"seu lucro mensal. Este valor será usado para",
+			"calcular quanto você pode gastar em parcelas.",
+			"",
+			"Digite seu lucro mensal (R$):",
+		})
+		fmt.Print("→ ")
+		profitStr, _ := reader.ReadString('\n')
+		profitStr = strings.TrimSpace(profitStr)
+		profitStr = strings.ReplaceAll(profitStr, ",", ".")
+
+		profit, err := strconv.ParseFloat(profitStr, 64)
+		if err != nil || profit <= 0 {
+			PrintCaixa([]string{
+				"❌ Valor inválido!",
+				"",
+				"Por favor, digite um valor válido maior que zero.",
+				"Exemplo: 5000 ou 5000,50",
+			})
+			time.Sleep(3 * time.Second)
+			return
+		}
+
+		list.MonthlyProfit = profit
+		SaveProducts(list)
+
+		PrintCaixa([]string{
+			"✅ Lucro mensal configurado com sucesso!",
+			"",
+			fmt.Sprintf("Seu lucro mensal: R$%.2f", profit),
+			"",
+			"Agora você pode começar a adicionar produtos.",
+		})
+		time.Sleep(3 * time.Second)
 	}
 
 	for {
