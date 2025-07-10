@@ -286,10 +286,10 @@ func atualizarLucroMensal(reader *bufio.Reader, lista *ListaProdutos) {
 		"0. Voltar ao Menu",
 		"",
 		fmt.Sprintf("Lucro mensal atual: R$%.2f", lista.LucroMensal),
-		"Novo lucro mensal (R$):",
+		"",
 	}
 	ImprimirCaixa(linhas)
-	fmt.Print("")
+	fmt.Print("Digite o novo lucro mensal (R$): ")
 	profitStr, _ := reader.ReadString('\n')
 	profitStr = strings.TrimSpace(profitStr)
 	profitStr = strings.ReplaceAll(profitStr, ",", ".")

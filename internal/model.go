@@ -47,4 +47,3 @@ func SalvarDados(dados Dados) {
 	}
 	os.WriteFile(Arquivo, bytes, 0644)
 }
-
