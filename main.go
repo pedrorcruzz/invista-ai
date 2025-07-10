@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pedrorcruzz/invista-ai/internal"
-	"github.com/pedrorcruzz/invista-ai/internal/gestorinteligente"
+	"github.com/pedrorcruzz/invista-ai-cli/internal"
+	"github.com/pedrorcruzz/invista-ai-cli/internal/gestorinteligente"
 )
 
 func main() {
