@@ -21,12 +21,12 @@ func main() {
 		scanner.Scan()
 		opcao := scanner.Text()
 
-		if inMenuInicial && opcao == "5" {
+		if inMenuInicial && opcao == "4" {
 			fmt.Println("Saindo...")
 			return
 		}
 
-		if !inMenuInicial && opcao == "5" {
+		if !inMenuInicial && opcao == "4" {
 			internal.PrintTelaUnificada(dados)
 			inMenuInicial = true
 			continue
@@ -40,30 +40,21 @@ func main() {
 				fmt.Print("\nPressione Enter para voltar ao menu...")
 				scanner.Scan()
 			}
-			internal.PrintMenuPrincipalSozinho()
-			inMenuInicial = false
+			internal.PrintTelaUnificada(dados)
+			inMenuInicial = true
 		case "2":
-			ano := internal.SelecionarAno(dados, scanner)
-			if ano != "" {
-				internal.MostrarResumoAno(dados, ano, true)
-				fmt.Print("\nPressione Enter para voltar ao menu...")
-				scanner.Scan()
-			}
-			internal.PrintMenuPrincipalSozinho()
-			inMenuInicial = false
-		case "3":
 			internal.AdicionarOuEditarMes(&dados, scanner)
 			internal.SalvarDados(dados)
 			internal.PrintTelaUnificada(dados)
 			inMenuInicial = true
-		case "4":
+		case "3":
 			gestorinteligente.ShowGestorMenu()
 			internal.PrintTelaUnificada(dados)
 			inMenuInicial = true
 		default:
 			fmt.Println("Opção inválida!")
-			internal.PrintMenuPrincipalSozinho()
-			inMenuInicial = false
+			internal.PrintTelaUnificada(dados)
+			inMenuInicial = true
 		}
 	}
 }
