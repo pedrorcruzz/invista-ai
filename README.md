@@ -162,7 +162,7 @@ Agora você pode rodar o InvistAI de qualquer diretório apenas digitando `invis
 
 ## 📝 Licença & Créditos
 
-- Licença MIT
+- LICENÇA [MIT](https://github.com/pedrorcruzz/invista-ai/blob/develop/LICENSE)
 - Criado por [Pedro Rosa](https://github.com/pedrorcruzz)
 
 ---
