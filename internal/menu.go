@@ -970,7 +970,11 @@ func GerenciarDividendosEVendas(dados *Dados, scanner *bufio.Scanner) {
 		fmt.Printf("║ 1. Adicionar dividendos                             ║\n")
 		fmt.Printf("║ 2. Registrar venda de cotas                         ║\n")
 		fmt.Printf("║ 3. Ver resumo de dividendos e vendas                ║\n")
-		fmt.Printf("║ 4. Voltar                                           ║\n")
+		fmt.Printf("║ 4. Editar dividendos                                ║\n")
+		fmt.Printf("║ 5. Remover dividendos                              ║\n")
+		fmt.Printf("║ 6. Editar venda de cotas                            ║\n")
+		fmt.Printf("║ 7. Remover venda de cotas                           ║\n")
+		fmt.Printf("║ 8. Voltar                                           ║\n")
 		fmt.Printf("╚══════════════════════════════════════════════════════╝\n")
 
 		opcao := InputBox("Escolha uma opção:", scanner)
@@ -982,7 +986,14 @@ func GerenciarDividendosEVendas(dados *Dados, scanner *bufio.Scanner) {
 		case "3":
 			MostrarResumoDividendosEVendas(m, mes, ano, scanner)
 		case "4":
-			// Salvar as mudanças no mês
+			EditarDividendos(m, scanner) // a implementar
+		case "5":
+			RemoverDividendos(m, scanner) // a implementar
+		case "6":
+			EditarVendaCotas(m, scanner) // a implementar
+		case "7":
+			RemoverVendaCotas(m, scanner) // a implementar
+		case "8":
 			dados.Anos[ano][mes] = *m
 			return
 		default:
@@ -1276,4 +1287,228 @@ func MostrarDARFAPagar(dados *Dados, scanner *bufio.Scanner) {
 	}
 
 	InputBox("Pressione Enter para continuar...", scanner)
+}
+
+// Funções stub para edição/remoção de dividendos e vendas
+func EditarDividendos(m *Mes, scanner *bufio.Scanner) {
+	if len(m.FIIs) == 0 {
+		fmt.Println("Nenhum FII registrado neste mês.")
+		Pause(2000)
+		return
+	}
+
+	ClearTerminal()
+	fmt.Println("╔══════════════════════════════════════════════════════╗")
+	fmt.Println("║                EDITAR DIVIDENDOS                    ║")
+	fmt.Println("╚══════════════════════════════════════════════════════╝")
+
+	fmt.Println("\nFIIs do mês:")
+	for i, fii := range m.FIIs {
+		fmt.Printf("%d - %s (Dividendos atuais: R$ %.2f)\n", i+1, fii.Codigo, fii.Dividendos)
+	}
+
+	opcaoStr := InputBox("Escolha o FII para editar dividendos:", scanner)
+	opcao, err := strconv.Atoi(opcaoStr)
+	if err != nil || opcao < 1 || opcao > len(m.FIIs) {
+		fmt.Println("Opção inválida.")
+		Pause(2000)
+		return
+	}
+
+	fii := &m.FIIs[opcao-1]
+	fmt.Printf("Dividendos atuais de %s: R$ %.2f\n", fii.Codigo, fii.Dividendos)
+
+	valorStr := InputBox("Digite o novo valor dos dividendos (R$):", scanner)
+	valorStr = strings.ReplaceAll(valorStr, ",", ".")
+	valor, err := strconv.ParseFloat(valorStr, 64)
+	if err != nil || valor < 0 {
+		fmt.Println("Valor inválido.")
+		Pause(2000)
+		return
+	}
+
+	fii.Dividendos = valor
+	fmt.Printf("✅ Dividendos de %s atualizados para R$ %.2f!\n", fii.Codigo, valor)
+	Pause(2000)
+}
+
+func RemoverDividendos(m *Mes, scanner *bufio.Scanner) {
+	if len(m.FIIs) == 0 {
+		fmt.Println("Nenhum FII registrado neste mês.")
+		Pause(2000)
+		return
+	}
+
+	ClearTerminal()
+	fmt.Println("╔══════════════════════════════════════════════════════╗")
+	fmt.Println("║                REMOVER DIVIDENDOS                   ║")
+	fmt.Println("╚══════════════════════════════════════════════════════╝")
+
+	fmt.Println("\nFIIs do mês:")
+	for i, fii := range m.FIIs {
+		fmt.Printf("%d - %s (Dividendos atuais: R$ %.2f)\n", i+1, fii.Codigo, fii.Dividendos)
+	}
+
+	opcaoStr := InputBox("Escolha o FII para remover dividendos:", scanner)
+	opcao, err := strconv.Atoi(opcaoStr)
+	if err != nil || opcao < 1 || opcao > len(m.FIIs) {
+		fmt.Println("Opção inválida.")
+		Pause(2000)
+		return
+	}
+
+	fii := &m.FIIs[opcao-1]
+	fmt.Printf("Dividendos atuais de %s: R$ %.2f\n", fii.Codigo, fii.Dividendos)
+	confirma := InputBox("Tem certeza que deseja remover (zerar) os dividendos deste FII? (s/n):", scanner)
+	if strings.TrimSpace(confirma) == "" || strings.ToLower(strings.TrimSpace(confirma)) == "s" {
+		fii.Dividendos = 0
+		fmt.Printf("✅ Dividendos de %s removidos (zerados)!\n", fii.Codigo)
+	} else {
+		fmt.Println("Operação cancelada.")
+	}
+	Pause(2000)
+}
+
+func EditarVendaCotas(m *Mes, scanner *bufio.Scanner) {
+	if len(m.FIIs) == 0 {
+		fmt.Println("Nenhum FII registrado neste mês.")
+		Pause(2000)
+		return
+	}
+
+	ClearTerminal()
+	fmt.Println("╔══════════════════════════════════════════════════════╗")
+	fmt.Println("║                EDITAR VENDA DE COTAS                ║")
+	fmt.Println("╚══════════════════════════════════════════════════════╝")
+
+	fmt.Println("\nFIIs do mês:")
+	for i, fii := range m.FIIs {
+		fmt.Printf("%d - %s (%d vendas)\n", i+1, fii.Codigo, len(fii.Vendas))
+	}
+
+	opcaoStr := InputBox("Escolha o FII para editar venda:", scanner)
+	opcao, err := strconv.Atoi(opcaoStr)
+	if err != nil || opcao < 1 || opcao > len(m.FIIs) {
+		fmt.Println("Opção inválida.")
+		Pause(2000)
+		return
+	}
+
+	fii := &m.FIIs[opcao-1]
+	if len(fii.Vendas) == 0 {
+		fmt.Println("Nenhuma venda registrada neste FII.")
+		Pause(2000)
+		return
+	}
+
+	fmt.Println("\nVendas registradas:")
+	for i, venda := range fii.Vendas {
+		fmt.Printf("%d - %d cotas, R$ %.2f cada, R$ %.2f total, Data: %s\n", i+1, venda.Quantidade, venda.PrecoVenda, venda.ValorTotal, venda.Data)
+	}
+
+	vendaStr := InputBox("Escolha a venda para editar:", scanner)
+	vendaIdx, err := strconv.Atoi(vendaStr)
+	if err != nil || vendaIdx < 1 || vendaIdx > len(fii.Vendas) {
+		fmt.Println("Opção inválida.")
+		Pause(2000)
+		return
+	}
+
+	venda := &fii.Vendas[vendaIdx-1]
+
+	// Editar campos
+	qtdStr := InputBox(fmt.Sprintf("Nova quantidade de cotas (atual: %d, Enter para manter):", venda.Quantidade), scanner)
+	if qtdStr != "" {
+		qtd, err := strconv.Atoi(qtdStr)
+		if err == nil && qtd > 0 {
+			venda.Quantidade = qtd
+		}
+	}
+	precoStr := InputBox(fmt.Sprintf("Novo preço por cota (atual: %.2f, Enter para manter):", venda.PrecoVenda), scanner)
+	if precoStr != "" {
+		precoStr = strings.ReplaceAll(precoStr, ",", ".")
+		preco, err := strconv.ParseFloat(precoStr, 64)
+		if err == nil && preco > 0 {
+			venda.PrecoVenda = preco
+			venda.ValorTotal = float64(venda.Quantidade) * preco
+		}
+	}
+	taxasStr := InputBox(fmt.Sprintf("Novas taxas (atual: %.2f, Enter para manter):", venda.Taxas), scanner)
+	if taxasStr != "" {
+		taxasStr = strings.ReplaceAll(taxasStr, ",", ".")
+		taxas, err := strconv.ParseFloat(taxasStr, 64)
+		if err == nil && taxas >= 0 {
+			venda.Taxas = taxas
+		}
+	}
+	dataStr := InputBox(fmt.Sprintf("Nova data (atual: %s, Enter para manter):", venda.Data), scanner)
+	if dataStr != "" {
+		venda.Data = dataStr
+	}
+	fmt.Println("✅ Venda editada!")
+	Pause(2000)
+}
+
+func RemoverVendaCotas(m *Mes, scanner *bufio.Scanner) {
+	if len(m.FIIs) == 0 {
+		fmt.Println("Nenhum FII registrado neste mês.")
+		Pause(2000)
+		return
+	}
+
+	ClearTerminal()
+	fmt.Println("╔══════════════════════════════════════════════════════╗")
+	fmt.Println("║                REMOVER VENDA DE COTAS               ║")
+	fmt.Println("╚══════════════════════════════════════════════════════╝")
+
+	fmt.Println("\nFIIs do mês:")
+	for i, fii := range m.FIIs {
+		fmt.Printf("%d - %s (%d vendas)\n", i+1, fii.Codigo, len(fii.Vendas))
+	}
+
+	opcaoStr := InputBox("Escolha o FII para remover venda:", scanner)
+	opcao, err := strconv.Atoi(opcaoStr)
+	if err != nil || opcao < 1 || opcao > len(m.FIIs) {
+		fmt.Println("Opção inválida.")
+		Pause(2000)
+		return
+	}
+
+	fii := &m.FIIs[opcao-1]
+	if len(fii.Vendas) == 0 {
+		fmt.Println("Nenhuma venda registrada neste FII.")
+		Pause(2000)
+		return
+	}
+
+	fmt.Println("\nVendas registradas:")
+	for i, venda := range fii.Vendas {
+		fmt.Printf("%d - %d cotas, R$ %.2f cada, R$ %.2f total, Data: %s\n", i+1, venda.Quantidade, venda.PrecoVenda, venda.ValorTotal, venda.Data)
+	}
+
+	vendaStr := InputBox("Escolha a venda para remover:", scanner)
+	vendaIdx, err := strconv.Atoi(vendaStr)
+	if err != nil || vendaIdx < 1 || vendaIdx > len(fii.Vendas) {
+		fmt.Println("Opção inválida.")
+		Pause(2000)
+		return
+	}
+
+	venda := fii.Vendas[vendaIdx-1]
+	confirma := InputBox("Tem certeza que deseja remover esta venda? (s/n):", scanner)
+	if strings.TrimSpace(confirma) == "" || strings.ToLower(strings.TrimSpace(confirma)) == "s" {
+		// Devolver cotas ao aporte de origem
+		for i := range fii.Aportes {
+			if fii.Aportes[i].Data == venda.AporteData {
+				fii.Aportes[i].Quantidade += venda.Quantidade
+				break
+			}
+		}
+		// Remover venda
+		fii.Vendas = append(fii.Vendas[:vendaIdx-1], fii.Vendas[vendaIdx:]...)
+		fmt.Println("✅ Venda removida e cotas devolvidas ao aporte de origem!")
+	} else {
+		fmt.Println("Operação cancelada.")
+	}
+	Pause(2000)
 }
