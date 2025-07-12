@@ -152,7 +152,11 @@ func GetResumoTotalAcumuladoStr(dados Dados) string {
 			lucroFII := fii.Dividendos
 			for _, aporte := range fii.Aportes {
 				totalQtd += aporte.Quantidade
-				totalValor += aporte.ValorTotal
+				if aporte.ValorTotalManual != nil {
+					totalValor += *aporte.ValorTotalManual
+				} else {
+					totalValor += aporte.ValorTotal
+				}
 			}
 			// Adicionar lucro das vendas
 			for _, venda := range fii.Vendas {
@@ -298,7 +302,11 @@ func GetResumoMesAtualStr(dados Dados) string {
 						totalValor := 0.0
 						for _, aporte := range fii.Aportes {
 							totalQtd += aporte.Quantidade
-							totalValor += aporte.ValorTotal
+							if aporte.ValorTotalManual != nil {
+								totalValor += *aporte.ValorTotalManual
+							} else {
+								totalValor += aporte.ValorTotal
+							}
 						}
 						fiisStr += fmt.Sprintf("    %s: %d cotas (R$ %s)\n", fii.Codigo, totalQtd, FormatFloatBR(totalValor))
 						for _, aporte := range fii.Aportes {
@@ -307,7 +315,11 @@ func GetResumoMesAtualStr(dados Dados) string {
 							if len(dia) >= 2 {
 								dia = dia[:2]
 							}
-							fiisStr += fmt.Sprintf("      Aporte dia %s: %d cotas | R$ %s\n", dia, aporte.Quantidade, FormatFloatBR(aporte.ValorTotal))
+							valorAporte := aporte.ValorTotal
+							if aporte.ValorTotalManual != nil {
+								valorAporte = *aporte.ValorTotalManual
+							}
+							fiisStr += fmt.Sprintf("      Aporte dia %s: %d cotas | R$ %s\n", dia, aporte.Quantidade, FormatFloatBR(valorAporte))
 						}
 					}
 					return resumo + fiisStr + "---------------------------------------"
@@ -396,7 +408,11 @@ func MostrarResumoAno(dados Dados, ano string) {
 				totalValor := 0.0
 				for _, aporte := range fii.Aportes {
 					totalQtd += aporte.Quantidade
-					totalValor += aporte.ValorTotal
+					if aporte.ValorTotalManual != nil {
+						totalValor += *aporte.ValorTotalManual
+					} else {
+						totalValor += aporte.ValorTotal
+					}
 				}
 				fmt.Printf("    %s: %d cotas (R$ %s)\n", fii.Codigo, totalQtd, FormatFloatBR(totalValor))
 				for _, aporte := range fii.Aportes {
@@ -405,7 +421,11 @@ func MostrarResumoAno(dados Dados, ano string) {
 					if len(dia) >= 2 {
 						dia = dia[:2]
 					}
-					fmt.Printf("      Aporte dia %s: %d cotas | R$ %s\n", dia, aporte.Quantidade, FormatFloatBR(aporte.ValorTotal))
+					valorAporte := aporte.ValorTotal
+					if aporte.ValorTotalManual != nil {
+						valorAporte = *aporte.ValorTotalManual
+					}
+					fmt.Printf("      Aporte dia %s: %d cotas | R$ %s\n", dia, aporte.Quantidade, FormatFloatBR(valorAporte))
 				}
 			}
 		}
@@ -462,7 +482,11 @@ func MostrarResumoAno(dados Dados, ano string) {
 			lucroFII := fii.Dividendos
 			for _, aporte := range fii.Aportes {
 				totalQtd += aporte.Quantidade
-				totalValor += aporte.ValorTotal
+				if aporte.ValorTotalManual != nil {
+					totalValor += *aporte.ValorTotalManual
+				} else {
+					totalValor += aporte.ValorTotal
+				}
 			}
 			// Adicionar lucro das vendas
 			for _, venda := range fii.Vendas {

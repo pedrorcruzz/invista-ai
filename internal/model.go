@@ -10,10 +10,11 @@ import (
 )
 
 type FIIAporte struct {
-	Quantidade int     `json:"quantidade"`
-	PrecoCota  float64 `json:"preco_cota"`
-	ValorTotal float64 `json:"valor_total"`
-	Data       string  `json:"data"`
+	Quantidade       int      `json:"quantidade"`
+	PrecoCota        float64  `json:"preco_cota"`
+	ValorTotal       float64  `json:"valor_total"`
+	ValorTotalManual *float64 `json:"valor_total_manual,omitempty"` // Valor manual opcional
+	Data             string   `json:"data"`
 }
 
 type FIIVenda struct {
@@ -107,7 +108,11 @@ func CalcularValorTotalFIIs(fiis []FII) float64 {
 	total := 0.0
 	for _, fii := range fiis {
 		for _, aporte := range fii.Aportes {
-			total += aporte.ValorTotal
+			if aporte.ValorTotalManual != nil {
+				total += *aporte.ValorTotalManual
+			} else {
+				total += aporte.ValorTotal
+			}
 		}
 	}
 	return total

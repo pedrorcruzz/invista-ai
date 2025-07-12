@@ -596,11 +596,24 @@ func AdicionarFII(dados *Dados, m *Mes, scanner *bufio.Scanner) {
 
 	valorTotal := float64(quantidade) * preco
 
+	// Perguntar valor manual
+	valorManualStr := InputBox("Colocar manual o valor final do aporte? (Enter para manter automático):", scanner)
+	valorManualStr = strings.ReplaceAll(valorManualStr, ",", ".")
+	var valorTotalManual *float64
+	if valorManualStr != "" {
+		valorManual, err := strconv.ParseFloat(valorManualStr, 64)
+		if err == nil && valorManual > 0 {
+			valorTotalManual = &valorManual
+			valorTotal = valorManual
+		}
+	}
+
 	novoAporte := FIIAporte{
-		Quantidade: quantidade,
-		PrecoCota:  preco,
-		ValorTotal: valorTotal,
-		Data:       dataStr,
+		Quantidade:       quantidade,
+		PrecoCota:        preco,
+		ValorTotal:       valorTotal,
+		ValorTotalManual: valorTotalManual,
+		Data:             dataStr,
 	}
 
 	// Verificar se o FII já existe no mês
@@ -703,6 +716,23 @@ func EditarFII(m *Mes, scanner *bufio.Scanner) {
 		preco, err := strconv.ParseFloat(precoStr, 64)
 		if err == nil && preco > 0 {
 			ap.PrecoCota = preco
+		}
+	}
+
+	// Valor manual
+	if ap.ValorTotalManual != nil {
+		fmt.Printf("Valor final manual atual: R$ %.2f\n", *ap.ValorTotalManual)
+	}
+	manualStr := InputBox("Valor Total [MANUAL] (Enter para manter/limpar):", scanner)
+	manualStr = strings.ReplaceAll(manualStr, ",", ".")
+	if manualStr != "" {
+		manual, err := strconv.ParseFloat(manualStr, 64)
+		if err == nil && manual > 0 {
+			ap.ValorTotalManual = &manual
+			ap.ValorTotal = manual
+		} else {
+			ap.ValorTotalManual = nil
+			ap.ValorTotal = float64(ap.Quantidade) * ap.PrecoCota
 		}
 	}
 
