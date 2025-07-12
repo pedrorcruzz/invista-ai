@@ -61,12 +61,19 @@ func GetResumoTotalAcumuladoStr(dados Dados) string {
 	// Para calcular lucro bruto total
 	lucroBrutoTotalAcumulado := 0.0
 
+	// Verificar se estamos no mês atual
+	hoje := time.Now()
+	anoAtual := fmt.Sprintf("%04d", hoje.Year())
+	mesAtual := fmt.Sprintf("%02d", int(hoje.Month()))
+
 	saldoAnterior := 0.0
 	for _, ano := range anos {
 		mesesMap := dados.Anos[ano]
 		meses := OrdenarChaves(mesesMap)
 		for _, mes := range meses {
 			m := mesesMap[mes]
+			isMesAtual := (ano == anoAtual && mes == mesAtual)
+
 			// SEM filtro: acumula aportes, FIIs, saídas, retiradas
 			aporteRFSoFar += m.AporteRF
 			aporteFIIsSoFar += CalcularValorTotalFIIs(m.FIIs)
@@ -104,10 +111,17 @@ func GetResumoTotalAcumuladoStr(dados Dados) string {
 			lucroLiquidoFIIsAcumulado += lucroLiquidoFIIs
 
 			lucroValido := lucroMesBruto > impostos
-			if lucroValido {
+
+			// Lucro bruto sempre acumula (todos os meses)
+			lucroBrutoTotalAcumulado += lucroMesBruto
+
+			// Se for o mês atual e não for válido, não acumular lucros líquidos
+			if isMesAtual && !lucroValido {
+				// Não acumular lucros líquidos do mês atual se não for válido
+				// Mas continuar acumulando FIIs (já foi feito acima)
+			} else if lucroValido {
 				lucroLiquidoAcumulado += lucroMesLiquidoRF
 				lucroMesLiquidoTotalAcumulado += lucroMesLiquidoTotal
-				lucroBrutoTotalAcumulado += lucroMesBruto
 			}
 			saldoAnterior = m.ValorBrutoRF
 		}
@@ -119,10 +133,8 @@ func GetResumoTotalAcumuladoStr(dados Dados) string {
 	totalAportadoBrutoRF := aporteRFSoFar
 	// Lucro bruto total = valor final - total aportado bruto (sem considerar saídas no cálculo)
 	lucroBrutoTotal := ultimoBrutoFinal - totalAportadoBrutoRF
-	// Corrigir: usar o mesmo cálculo do lucro bruto acumulado
+	// Corrigir: usar o acumulado dos lucros brutos dos meses válidos
 	lucroBrutoTotal = lucroBrutoTotalAcumulado
-	// Lucro líquido RF = valor líquido final - total aportado líquido RF
-	lucroLiquidoAcumulado = ultimoLiquidoFinal - (aporteRFSoFar - saidaSoFar)
 
 	// Porcentagens e valores de RF e FIIs (bruto)
 	percRFBruto := 0.0
@@ -246,7 +258,14 @@ Lucro FIIs: R$ %s%s
 ╚════════════════════════════════════════════════════╝
 `,
 		alertaDARF,
-		FormatFloatBR(totalAportadoBruto), percRFBruto, FormatFloatBR(aporteRFSoFar), percFIIsBruto, FormatFloatBR(aporteFIIsSoFar), FormatFloatBR(totalAportadoLiquido), percRFLiquido, FormatFloatBR(rfLiquido), percFIIsLiquido, FormatFloatBR(fiisLiquido), FormatFloatBR(ultimoBrutoFinal), FormatFloatBR(ultimoLiquidoFinal), FormatFloatBR(lucrosRetiradosTotal), FormatFloatBR(lucroBrutoTotal), FormatFloatBR(lucroLiquidoAcumulado), FormatFloatBR(lucroLiquidoFIIsAcumulado), fiisDetalhes, FormatFloatBR(lucroBrutoTotalAcumulado), FormatFloatBR(lucroMesLiquidoTotalAcumulado))
+		FormatFloatBR(totalAportadoBruto), percRFBruto, FormatFloatBR(aporteRFSoFar), percFIIsBruto, FormatFloatBR(aporteFIIsSoFar),
+		FormatFloatBR(totalAportadoLiquido), percRFLiquido, FormatFloatBR(rfLiquido), percFIIsLiquido, FormatFloatBR(fiisLiquido),
+		FormatFloatBR(ultimoBrutoFinal), FormatFloatBR(ultimoLiquidoFinal), FormatFloatBR(lucrosRetiradosTotal), FormatFloatBR(lucroBrutoTotal),
+		FormatFloatBR(lucroLiquidoAcumulado),     // Lucro Líquido RF
+		FormatFloatBR(lucroLiquidoFIIsAcumulado), // Lucro FIIs
+		fiisDetalhes,
+		FormatFloatBR(lucroBrutoTotalAcumulado),      // Lucro Total Bruto
+		FormatFloatBR(lucroMesLiquidoTotalAcumulado)) // Lucro Total Líquido
 }
 
 func GetResumoMesAtualStr(dados Dados) string {
@@ -438,10 +457,25 @@ func MostrarResumoAno(dados Dados, ano string) {
 		lucrosRetiradosTotal += m.LucroRetirado
 		valorBrutoFinal = m.ValorBrutoRF
 		valorLiquidoFinal = m.ValorLiquidoRF
-		lucroLiquidoAcumulado += lucroMesLiquidoRF
-		lucroLiquidoFIIsAcumulado += lucroLiquidoFIIs
-		lucroMesLiquidoTotalAcumulado += lucroMesLiquidoTotal
+
+		// Lucro bruto sempre acumula (todos os meses)
 		lucroBrutoTotalAcumulado += lucroMesBruto
+
+		// Lucro líquido só acumula se for válido (lucro cobre imposto)
+		lucroValido := lucroMesBruto > impostos
+		if isMesAtual && !lucroValido {
+			// Não acumular lucros líquidos do mês atual se não for válido
+			// Mas continuar acumulando FIIs
+			lucroLiquidoFIIsAcumulado += lucroLiquidoFIIs
+		} else if lucroValido {
+			lucroLiquidoAcumulado += lucroMesLiquidoRF
+			lucroLiquidoFIIsAcumulado += lucroLiquidoFIIs
+			lucroMesLiquidoTotalAcumulado += lucroMesLiquidoTotal
+		} else {
+			// Meses passados sempre acumulam FIIs
+			lucroLiquidoFIIsAcumulado += lucroLiquidoFIIs
+		}
+
 		saldoAnterior = m.ValorBrutoRF
 	}
 
@@ -449,10 +483,11 @@ func MostrarResumoAno(dados Dados, ano string) {
 	totalAportadoLiquido := totalAportadoBruto - saidaSoFar
 	// Lucro bruto total = valor final - total aportado bruto (sem considerar saídas no cálculo)
 	lucroBrutoTotal := valorBrutoFinal - totalAportadoBruto
-	// Corrigir: usar o mesmo cálculo do lucro bruto acumulado
+	// Corrigir: usar o acumulado dos lucros brutos
 	lucroBrutoTotal = lucroBrutoTotalAcumulado
-	// Lucro líquido RF = valor líquido final - total aportado líquido RF
-	lucroLiquidoTotal := valorLiquidoFinal - (aporteRFSoFar - saidaSoFar)
+	// Usar o acumulado correto dos lucros líquidos (não sobrescrever)
+	// lucroLiquidoTotal := valorLiquidoFinal - (aporteRFSoFar - saidaSoFar)
+	lucroLiquidoTotal := lucroLiquidoAcumulado
 	lucroLiquidoFIIsTotal := lucroLiquidoFIIsAcumulado
 
 	// Calcular porcentagens
