@@ -314,6 +314,26 @@ func GerenciarFIIs(dados *Dados, scanner *bufio.Scanner) {
 		ClearTerminal()
 		fmt.Println("╔══════════════════════════════════════════════════════╗")
 		fmt.Println("║                     FIIs                            ║")
+		fmt.Println("╟──────────────────────────────────────────────────────╢")
+		// Checar se há DARF a pagar
+		totalDARF := 0.0
+		maiorPrazo := ""
+		for ano, mesesMap := range dados.Anos {
+			for mes, m := range mesesMap {
+				darfMes := CalcularDARFTotal(m.FIIs)
+				totalDARF += darfMes
+				if darfMes > 0 {
+					ultimoDia, mesPagamento, anoPagamento := CalcularPrazoDARF(mes, ano)
+					prazo := fmt.Sprintf("%02d/%02d/%04d", ultimoDia, mesPagamento, anoPagamento)
+					if prazo > maiorPrazo {
+						maiorPrazo = prazo
+					}
+				}
+			}
+		}
+		if totalDARF > 0 {
+			fmt.Printf("║ ⚠️ DARF a pagar: R$ %s | Prazo (%s)%*s║\n", FormatFloatBR(totalDARF), maiorPrazo, 37-len(FormatFloatBR(totalDARF))-len(maiorPrazo), "")
+		}
 		fmt.Println("╠══════════════════════════════════════════════════════╣")
 		fmt.Println("║ 1. Adicionar/editar FIIs do mês                     ║")
 		fmt.Println("║ 2. Gerenciar dividendos e vendas                    ║")
@@ -1239,9 +1259,7 @@ func MostrarResumoDividendosEVendas(m *Mes, mes, ano string, scanner *bufio.Scan
 
 func MostrarDARFAPagar(dados *Dados, scanner *bufio.Scanner) {
 	ClearTerminal()
-	fmt.Println("╔══════════════════════════════════════════════════════╗")
-	fmt.Println("║                DARF A PAGAR                          ║")
-	fmt.Println("╚══════════════════════════════════════════════════════╝")
+	linhas := []string{" DARF A PAGAR ", "---"}
 
 	// Coletar todos os DARFs por mês/ano
 	darfPorMes := make(map[string]map[string]float64) // ano -> mes -> valor
@@ -1261,31 +1279,24 @@ func MostrarDARFAPagar(dados *Dados, scanner *bufio.Scanner) {
 	}
 
 	if totalDARF == 0 {
-		fmt.Println("\n✅ Nenhum DARF a pagar!")
+		linhas = append(linhas, "✅ Nenhum DARF a pagar!")
 	} else {
-		fmt.Printf("\n⚠️  ATENÇÃO: Você tem DARF a pagar!\n")
-		fmt.Printf("Total de DARF: R$ %.2f\n\n", totalDARF)
-
-		// Ordenar anos e meses
+		linhas = append(linhas, "⚠️  ATENÇÃO: Você tem DARF a pagar!", fmt.Sprintf("Total de DARF: R$ %s", FormatFloatBR(totalDARF)), "---")
 		anos := OrdenarChaves(darfPorMes)
 		for _, ano := range anos {
 			meses := OrdenarChaves(darfPorMes[ano])
-			fmt.Printf("Ano %s:\n", ano)
+			linhas = append(linhas, fmt.Sprintf("Ano %s:", ano))
 			for _, mes := range meses {
 				darf := darfPorMes[ano][mes]
-				fmt.Printf("  %s: R$ %.2f\n", NomeMes(mes), darf)
-
-				// Calcular prazo de pagamento
 				ultimoDia, mesPagamento, anoPagamento := CalcularPrazoDARF(mes, ano)
-				fmt.Printf("    Prazo: até %02d/%02d/%d\n", ultimoDia, mesPagamento, anoPagamento)
+				linhas = append(linhas, fmt.Sprintf("  %s: R$ %s", NomeMes(mes), FormatFloatBR(darf)))
+				linhas = append(linhas, fmt.Sprintf("    Prazo: até %02d/%02d/%04d", ultimoDia, mesPagamento, anoPagamento))
 			}
-			fmt.Println()
+			linhas = append(linhas, "---")
 		}
-
-		fmt.Println("💡 Dica: DARF pode ser pago até o último dia do mês seguinte")
-		fmt.Println("   ao mês em que ocorreu a venda.")
+		linhas = append(linhas, "💡 Dica: DARF pode ser pago até o último dia do mês seguinte ao mês em que ocorreu a venda.")
 	}
-
+	PrintCaixa(linhas)
 	InputBox("Pressione Enter para continuar...", scanner)
 }
 

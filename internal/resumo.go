@@ -327,18 +327,51 @@ func GetResumoMesAtualStr(dados Dados) string {
 								totalValor += aporte.ValorTotal
 							}
 						}
-						fiisStr += fmt.Sprintf("    %s: %d cotas (R$ %s)\n", fii.Codigo, totalQtd, FormatFloatBR(totalValor))
+						cotasVendidas := 0
+						for _, venda := range fii.Vendas {
+							cotasVendidas += venda.Quantidade
+						}
+						totalQtdOriginal := 0
 						for _, aporte := range fii.Aportes {
-							// Extrair apenas o dia da data (formato DD/MM/AAAA)
-							dia := aporte.Data
-							if len(dia) >= 2 {
-								dia = dia[:2]
+							// Soma a quantidade original do aporte (quantidade atual + cotas vendidas daquele aporte)
+							qtdVendidaAporte := 0
+							for _, venda := range fii.Vendas {
+								if venda.AporteData == aporte.Data {
+									qtdVendidaAporte += venda.Quantidade
+								}
 							}
-							valorAporte := aporte.ValorTotal
-							if aporte.ValorTotalManual != nil {
-								valorAporte = *aporte.ValorTotalManual
+							totalQtdOriginal += aporte.Quantidade + qtdVendidaAporte
+						}
+						if cotasVendidas > 0 {
+							fiisStr += fmt.Sprintf("    %s: %d cotas atuais | %d cotas vendidas | %d cotas (total) | R$ %s\n", fii.Codigo, totalQtd, cotasVendidas, totalQtdOriginal, FormatFloatBR(totalValor))
+						} else {
+							fiisStr += fmt.Sprintf("    %s: %d cotas (total) | R$ %s\n", fii.Codigo, totalQtdOriginal, FormatFloatBR(totalValor))
+						}
+						for _, aporte := range fii.Aportes {
+							// Exibir data completa (dd/mm/aaaa)
+							data := aporte.Data
+							// Calcular quantidade original do aporte
+							qtdVendidaAporte := 0
+							for _, venda := range fii.Vendas {
+								if venda.AporteData == aporte.Data {
+									qtdVendidaAporte += venda.Quantidade
+								}
 							}
-							fiisStr += fmt.Sprintf("      Aporte dia %s: %d cotas | R$ %s\n", dia, aporte.Quantidade, FormatFloatBR(valorAporte))
+							quantidadeOriginal := aporte.Quantidade + qtdVendidaAporte
+							fiisStr += fmt.Sprintf("      Aporte (%s): | %d cotas | R$ %s\n", data, quantidadeOriginal, FormatFloatBR(aporte.ValorTotal))
+						}
+						for _, venda := range fii.Vendas {
+							msg := fmt.Sprintf("      Venda (%s): | %d cotas | Preço médio: R$ %s | Preço total da venda: R$ %s | Taxas: R$ %s",
+								venda.Data,
+								venda.Quantidade,
+								FormatFloatBR(venda.PrecoVenda),
+								FormatFloatBR(venda.ValorTotal),
+								FormatFloatBR(venda.Taxas),
+							)
+							if venda.DARF > 0 {
+								msg += fmt.Sprintf(" | DARF: R$ %s", FormatFloatBR(venda.DARF))
+							}
+							fiisStr += msg + "\n"
 						}
 					}
 					return resumo + fiisStr + "---------------------------------------"
@@ -433,18 +466,51 @@ func MostrarResumoAno(dados Dados, ano string) {
 						totalValor += aporte.ValorTotal
 					}
 				}
-				fmt.Printf("    %s: %d cotas (R$ %s)\n", fii.Codigo, totalQtd, FormatFloatBR(totalValor))
+				cotasVendidas := 0
+				for _, venda := range fii.Vendas {
+					cotasVendidas += venda.Quantidade
+				}
+				totalQtdOriginal := 0
 				for _, aporte := range fii.Aportes {
-					// Extrair apenas o dia da data (formato DD/MM/AAAA)
-					dia := aporte.Data
-					if len(dia) >= 2 {
-						dia = dia[:2]
+					// Soma a quantidade original do aporte (quantidade atual + cotas vendidas daquele aporte)
+					qtdVendidaAporte := 0
+					for _, venda := range fii.Vendas {
+						if venda.AporteData == aporte.Data {
+							qtdVendidaAporte += venda.Quantidade
+						}
 					}
-					valorAporte := aporte.ValorTotal
-					if aporte.ValorTotalManual != nil {
-						valorAporte = *aporte.ValorTotalManual
+					totalQtdOriginal += aporte.Quantidade + qtdVendidaAporte
+				}
+				if cotasVendidas > 0 {
+					fmt.Printf("    %s: %d cotas atuais | %d cotas vendidas | %d cotas (total) | R$ %s\n", fii.Codigo, totalQtd, cotasVendidas, totalQtdOriginal, FormatFloatBR(totalValor))
+				} else {
+					fmt.Printf("    %s: %d cotas (total) | R$ %s\n", fii.Codigo, totalQtdOriginal, FormatFloatBR(totalValor))
+				}
+				for _, aporte := range fii.Aportes {
+					// Exibir data completa (dd/mm/aaaa)
+					data := aporte.Data
+					// Calcular quantidade original do aporte
+					qtdVendidaAporte := 0
+					for _, venda := range fii.Vendas {
+						if venda.AporteData == aporte.Data {
+							qtdVendidaAporte += venda.Quantidade
+						}
 					}
-					fmt.Printf("      Aporte dia %s: %d cotas | R$ %s\n", dia, aporte.Quantidade, FormatFloatBR(valorAporte))
+					quantidadeOriginal := aporte.Quantidade + qtdVendidaAporte
+					fmt.Printf("      Aporte (%s): | %d cotas | R$ %s\n", data, quantidadeOriginal, FormatFloatBR(aporte.ValorTotal))
+				}
+				for _, venda := range fii.Vendas {
+					msg := fmt.Sprintf("      Venda (%s): | %d cotas | Preço médio: R$ %s | Preço total da venda: R$ %s | Taxas: R$ %s",
+						venda.Data,
+						venda.Quantidade,
+						FormatFloatBR(venda.PrecoVenda),
+						FormatFloatBR(venda.ValorTotal),
+						FormatFloatBR(venda.Taxas),
+					)
+					if venda.DARF > 0 {
+						msg += fmt.Sprintf(" | DARF: R$ %s", FormatFloatBR(venda.DARF))
+					}
+					fmt.Printf("      %s\n", msg)
 				}
 			}
 		}
