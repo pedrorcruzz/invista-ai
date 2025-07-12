@@ -8,6 +8,8 @@
   <b>Gerencie seus investimentos. Controle seus gastos. Tudo no seu terminal.</b>
 </p>
 
+> **📝 Nota:** Este ainda não é um CLI 100% empacotado, mas você pode executá-lo de qualquer lugar do terminal criando scripts shell conforme explicado na seção "Automatizando o Acesso de Qualquer Lugar no Terminal" abaixo.
+
 ---
 
 ## ✨ Funcionalidades
