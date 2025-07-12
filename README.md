@@ -10,14 +10,16 @@
 
 ---
 
-> **🔔 Nota:** Este repositório reúne o antigo `smart-spending-checker CLI` (também criado por mim) em uma única ferramenta para **gestão de investimentos** e **controle inteligente de gastos**.  
-> Todos os recursos agora estão centralizados em um só lugar!
-
-> ⚠️ **Atenção:** Este sistema foi projetado para funcionar apenas com investimentos em Renda Fixa (RDB e CDB) e Fundos Imobiliários (FIIs). O controle de FIIs serve apenas para organizar e somar os dividendos recebidos na planilha, não sendo um controle detalhado de cotas ou operações.
-
 ## ✨ Funcionalidades
 
 - 📈 <b>Controle de Investimentos</b> — Adicione/edite dados mensais, veja lucros brutos/líquidos e visualize seu progresso.
+- 🏦 <b>Controle detalhado de FIIs</b> — Gerencie cada fundo imobiliário individualmente, com múltiplos aportes por mês, registro de quantidade, preço, data e valor de cada aporte.
+- 💸 <b>Registro de dividendos e vendas</b> — Lance dividendos recebidos por FII e registre vendas de cotas por aporte, com cálculo automático de lucro e taxas.
+- 🧾 <b>Cálculo automático de DARF</b> — O sistema calcula automaticamente o imposto devido sobre vendas de FIIs, notifica o valor e o prazo de pagamento, e exibe alertas quando houver DARF a pagar.
+- 📊 <b>Resumos mensais e anuais detalhados</b> — Veja relatórios completos com percentuais de lucro por FII, separação clara entre Renda Fixa e FIIs, e visualização alinhada de todos os dados.
+- 📅 <b>Visualização de FIIs do mês</b> — Veja todos os FIIs do mês, aportes com datas, quantidades e valores, e dividendos recebidos, tudo organizado e fácil de ler.
+- 🔄 <b>Separação total entre Renda Fixa e FIIs</b> — Menus, relatórios e operações totalmente separados para cada tipo de investimento.
+- 🗑️ <b>Confirmação explícita para remoção</b> — Remoção de FIIs e produtos exige confirmação clara do usuário.
 - 🧠 <b>Gestor Inteligente de Gastos</b> — Planeje compras, gerencie parcelas e receba recomendações inteligentes.
 - 💾 <b>Dados Locais</b> — Todos os seus dados são salvos localmente em arquivos JSON simples.
 - 🖥️ <b>Interface Bonita no Terminal</b> — Menus modernos com bordas para uma experiência CLI agradável.
@@ -75,7 +77,7 @@ clear
 
 Dê permissão de execução ao script:
 
-```bash
+```sh
 chmod +x invista-ai.sh
 ```
 
@@ -133,11 +135,12 @@ Agora você pode rodar o InvistAI de qualquer diretório apenas digitando `invis
 ### Menu Principal
 
 ```
-1. Ver resumo completo (vertical)
-2. Ver resumo completo (horizontal)
-3. Adicionar/editar mês
+1. Ver resumo completo
+2. Renda Fixa
+3. FIIs
 4. Gestor Inteligente de Gastos
-5. Sair
+5. Retirar Lucro
+6. Sair do programa
 ```
 
 ### Gestor Inteligente de Gastos

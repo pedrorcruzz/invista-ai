@@ -3,6 +3,7 @@ package internal
 import (
 	"bufio"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -15,9 +16,10 @@ func PrintMenuPrincipalSozinho() {
 	fmt.Println("║ --- MENU PRINCIPAL ---                             ║")
 	fmt.Println("╠══════════════════════════════════════════════════════╣")
 	fmt.Println("║ 1. Ver resumo completo                              ║")
-	fmt.Println("║ 2. Adicionar/editar mês                             ║")
-	fmt.Println("║ 3. Gestor Inteligente de Gastos                     ║")
-	fmt.Println("║ 4. Voltar para o menu inicial                       ║")
+	fmt.Println("║ 2. Renda Fixa                                       ║")
+	fmt.Println("║ 3. FIIs                                             ║")
+	fmt.Println("║ 4. Gestor Inteligente de Gastos                     ║")
+	fmt.Println("║ 5. Voltar para o menu inicial                       ║")
 	fmt.Println("╚══════════════════════════════════════════════════════╝")
 }
 
@@ -76,10 +78,11 @@ func repeatStr(s string, n int) string {
 func GetMenuPrincipalStr() string {
 	return `--- MENU PRINCIPAL ---
 1. Ver resumo completo
-2. Adicionar/editar mês
-3. Gestor Inteligente de Gastos
-4. Retirar Lucro
-5. Sair do programa`
+2. Renda Fixa
+3. FIIs
+4. Gestor Inteligente de Gastos
+5. Retirar Lucro
+6. Sair do programa`
 }
 
 func SelecionarAno(dados Dados, scanner *bufio.Scanner) string {
@@ -177,7 +180,7 @@ func AdicionarOuEditarMes(dados *Dados, scanner *bufio.Scanner) {
 		dados.Anos[ano] = make(Ano)
 	}
 	m := dados.Anos[ano][mes]
-	if m != (Mes{}) {
+	if m.AporteRF != 0 || m.Saida != 0 || m.ValorBrutoRF != 0 || m.ValorLiquidoRF != 0 || m.LucroRetirado != 0 || len(m.FIIs) > 0 {
 		for {
 			// Menu de edição em caixinha
 			lines := []string{
@@ -186,13 +189,10 @@ func AdicionarOuEditarMes(dados *Dados, scanner *bufio.Scanner) {
 				"0. Sair da edição",
 				"",
 				fmt.Sprintf("1. Aporte RF (atual: %s)", FormatFloatBR(m.AporteRF)),
-				fmt.Sprintf("2. Aporte FIIs (atual: %s)", FormatFloatBR(m.AporteFIIs)),
-				fmt.Sprintf("3. Saída (atual: %s)", FormatFloatBR(m.Saida)),
-				fmt.Sprintf("4. Valor Bruto RF (atual: %s)", FormatFloatBR(m.ValorBrutoRF)),
-				fmt.Sprintf("5. Valor Líquido RF (atual: %s)", FormatFloatBR(m.ValorLiquidoRF)),
-				fmt.Sprintf("6. Valor Líquido FIIs (atual: %s)", FormatFloatBR(m.ValorLiquidoFIIs)),
-				fmt.Sprintf("7. Lucro Retirado (atual: %s)", FormatFloatBR(m.LucroRetirado)),
-				fmt.Sprintf("8. Lucro Líquido FIIs (atual: %s)", FormatFloatBR(m.LucroLiquidoFIIs)),
+				fmt.Sprintf("2. Saída (atual: %s)", FormatFloatBR(m.Saida)),
+				fmt.Sprintf("3. Valor Bruto RF (atual: %s)", FormatFloatBR(m.ValorBrutoRF)),
+				fmt.Sprintf("4. Valor Líquido RF (atual: %s)", FormatFloatBR(m.ValorLiquidoRF)),
+				fmt.Sprintf("5. Lucro Retirado (atual: %s)", FormatFloatBR(m.LucroRetirado)),
 			}
 			PrintCaixa(lines)
 			opcao := InputBox("Escolha:", scanner)
@@ -202,25 +202,16 @@ func AdicionarOuEditarMes(dados *Dados, scanner *bufio.Scanner) {
 				m.AporteRF, _ = ParseFloatBR(valor)
 			case "2":
 				valor := InputBox("Novo valor:", scanner)
-				m.AporteFIIs, _ = ParseFloatBR(valor)
+				m.Saida, _ = ParseFloatBR(valor)
 			case "3":
 				valor := InputBox("Novo valor:", scanner)
-				m.Saida, _ = ParseFloatBR(valor)
+				m.ValorBrutoRF, _ = ParseFloatBR(valor)
 			case "4":
 				valor := InputBox("Novo valor:", scanner)
-				m.ValorBrutoRF, _ = ParseFloatBR(valor)
+				m.ValorLiquidoRF, _ = ParseFloatBR(valor)
 			case "5":
 				valor := InputBox("Novo valor:", scanner)
-				m.ValorLiquidoRF, _ = ParseFloatBR(valor)
-			case "6":
-				valor := InputBox("Novo valor:", scanner)
-				m.ValorLiquidoFIIs, _ = ParseFloatBR(valor)
-			case "7":
-				valor := InputBox("Novo valor:", scanner)
 				m.LucroRetirado, _ = ParseFloatBR(valor)
-			case "8":
-				valor := InputBox("Novo valor:", scanner)
-				m.LucroLiquidoFIIs, _ = ParseFloatBR(valor)
 			case "0":
 				dados.Anos[ano][mes] = m
 				PrintCaixa([]string{"✅ Edição concluída!"})
@@ -232,22 +223,16 @@ func AdicionarOuEditarMes(dados *Dados, scanner *bufio.Scanner) {
 		}
 	}
 	aporteRF, _ := ParseFloatBR(InputBox("Digite o aporte na Renda Fixa: R$", scanner))
-	aporteFIIs, _ := ParseFloatBR(InputBox("Digite o aporte em FIIs: R$", scanner))
 	saida, _ := ParseFloatBR(InputBox("Digite a saída (retirada) do mês: R$", scanner))
 	valorBrutoRF, _ := ParseFloatBR(InputBox("Digite o valor bruto da Renda Fixa: R$", scanner))
 	valorLiquidoRF, _ := ParseFloatBR(InputBox("Digite o valor líquido da Renda Fixa: R$", scanner))
-	valorLiquidoFIIs, _ := ParseFloatBR(InputBox("Digite o valor líquido dos FIIs: R$", scanner))
 	lucroRetirado, _ := ParseFloatBR(InputBox("Digite o valor de lucro retirado: R$", scanner))
-	lucroLiquidoFIIs, _ := ParseFloatBR(InputBox("Digite o lucro líquido dos FIIs: R$", scanner))
 	dados.Anos[ano][mes] = Mes{
-		AporteRF:         aporteRF,
-		AporteFIIs:       aporteFIIs,
-		Saida:            saida,
-		ValorBrutoRF:     valorBrutoRF,
-		ValorLiquidoRF:   valorLiquidoRF,
-		ValorLiquidoFIIs: valorLiquidoFIIs,
-		LucroRetirado:    lucroRetirado,
-		LucroLiquidoFIIs: lucroLiquidoFIIs,
+		AporteRF:       aporteRF,
+		Saida:          saida,
+		ValorBrutoRF:   valorBrutoRF,
+		ValorLiquidoRF: valorLiquidoRF,
+		LucroRetirado:  lucroRetirado,
 	}
 	PrintCaixa([]string{"✅ Dados adicionados com sucesso!"})
 }
@@ -301,4 +286,959 @@ func RetirarLucro(dados *Dados, scanner *bufio.Scanner) {
 	m.LucroRetirado += valor
 	dados.Anos[anoAtual][mesAtual] = m
 	PrintCaixa([]string{fmt.Sprintf("✅ Lucro de R$ %s retirado com sucesso!", FormatFloatBR(valor))})
+}
+
+func GerenciarRendaFixa(dados *Dados, scanner *bufio.Scanner) {
+	ClearTerminal()
+	fmt.Println("╔══════════════════════════════════════════════════════╗")
+	fmt.Println("║                 RENDA FIXA                          ║")
+	fmt.Println("╠══════════════════════════════════════════════════════╣")
+	fmt.Println("║ 1. Adicionar/editar mês                             ║")
+	fmt.Println("║ 2. Voltar ao menu principal                         ║")
+	fmt.Println("╚══════════════════════════════════════════════════════╝")
+
+	opcao := InputBox("Escolha uma opção:", scanner)
+	switch opcao {
+	case "1":
+		AdicionarOuEditarMes(dados, scanner)
+	case "2":
+		return
+	default:
+		fmt.Println("Opção inválida.")
+		Pause(2000)
+	}
+}
+
+func GerenciarFIIs(dados *Dados, scanner *bufio.Scanner) {
+	for {
+		ClearTerminal()
+		fmt.Println("╔══════════════════════════════════════════════════════╗")
+		fmt.Println("║                     FIIs                            ║")
+		fmt.Println("╠══════════════════════════════════════════════════════╣")
+		fmt.Println("║ 1. Adicionar/editar FIIs do mês                     ║")
+		fmt.Println("║ 2. Gerenciar dividendos e vendas                    ║")
+		fmt.Println("║ 3. Ver DARF a pagar                                 ║")
+		fmt.Println("║ 4. Ver FIIs conhecidos                              ║")
+		fmt.Println("║ 5. Voltar ao menu principal                         ║")
+		fmt.Println("╚══════════════════════════════════════════════════════╝")
+
+		opcao := InputBox("Escolha uma opção:", scanner)
+		switch opcao {
+		case "1":
+			GerenciarFIIsMes(dados, scanner)
+		case "2":
+			GerenciarDividendosEVendas(dados, scanner)
+		case "3":
+			MostrarDARFAPagar(dados, scanner)
+		case "4":
+			MostrarFIIsConhecidos(dados, scanner)
+		case "5":
+			return
+		default:
+			fmt.Println("Opção inválida.")
+			Pause(2000)
+		}
+	}
+}
+
+func GerenciarFIIsMes(dados *Dados, scanner *bufio.Scanner) {
+	// Seleção de ano e mês (reutilizar lógica existente)
+	ano, mes := SelecionarAnoMes(dados, scanner)
+	if ano == "" || mes == "" {
+		return
+	}
+
+	if dados.Anos[ano] == nil {
+		dados.Anos[ano] = make(Ano)
+	}
+
+	mesData := dados.Anos[ano][mes]
+	m := &mesData
+
+	for {
+		ClearTerminal()
+		fmt.Printf("╔══════════════════════════════════════════════════════╗\n")
+		fmt.Printf("║                FIIs - %s/%s                        ║\n", NomeMes(mes), ano)
+		fmt.Printf("╠══════════════════════════════════════════════════════╣\n")
+		fmt.Printf("║ 1. Adicionar FII                                    ║\n")
+		fmt.Printf("║ 2. Editar FII                                       ║\n")
+		fmt.Printf("║ 3. Remover FII                                      ║\n")
+		fmt.Printf("║ 4. Ver FIIs do mês                                  ║\n")
+		fmt.Printf("║ 5. Voltar                                           ║\n")
+		fmt.Printf("╚══════════════════════════════════════════════════════╝\n")
+
+		opcao := InputBox("Escolha uma opção:", scanner)
+		switch opcao {
+		case "1":
+			AdicionarFII(dados, m, scanner)
+		case "2":
+			EditarFII(m, scanner)
+		case "3":
+			RemoverFII(m, scanner)
+		case "4":
+			MostrarFIIsMes(m, mes, ano, scanner)
+		case "5":
+			// Salvar as mudanças no mês
+			dados.Anos[ano][mes] = *m
+			return
+		default:
+			fmt.Println("Opção inválida.")
+			Pause(2000)
+		}
+	}
+}
+
+func SelecionarAnoMes(dados *Dados, scanner *bufio.Scanner) (string, string) {
+	// Seleção de ano
+	anos := OrdenarChaves(dados.Anos)
+	ano := ""
+	if len(anos) > 0 {
+		fmt.Println("Anos disponíveis:")
+		for i, a := range anos {
+			fmt.Printf("%d - %s\n", i+1, a)
+		}
+		fmt.Print("Digite o número ou o ano desejado (YYYY): ")
+		scanner.Scan()
+		input := scanner.Text()
+		if idx, err := strconv.Atoi(input); err == nil {
+			if idx >= 1 && idx <= len(anos) {
+				ano = anos[idx-1]
+			}
+		}
+		if ano == "" {
+			for _, a := range anos {
+				if a == input {
+					ano = a
+				}
+			}
+		}
+	}
+	if ano == "" {
+		ano = InputBox("Digite o ano(YYYY):", scanner)
+	}
+
+	// Seleção de mês
+	mes := ""
+	mesesExistentes := []string{}
+	if dados.Anos[ano] != nil {
+		mesesExistentes = OrdenarChaves(dados.Anos[ano])
+	}
+	if len(mesesExistentes) > 0 {
+		fmt.Println("Meses disponíveis:")
+		for i, m := range mesesExistentes {
+			fmt.Printf("%d - %s\n", i+1, NomeMes(m))
+		}
+		fmt.Print("Digite o número ou o mês desejado (MM): ")
+		scanner.Scan()
+		input := scanner.Text()
+		if idx, err := strconv.Atoi(input); err == nil {
+			if idx >= 1 && idx <= len(mesesExistentes) {
+				mes = mesesExistentes[idx-1]
+			}
+		}
+		if mes == "" {
+			for _, m := range mesesExistentes {
+				if m == input {
+					mes = m
+				}
+			}
+		}
+	}
+	if mes == "" {
+		mes = InputBox("Digite o mês(MM):", scanner)
+	}
+
+	return ano, mes
+}
+
+func SelecionarAnoMesComFIIs(dados *Dados, scanner *bufio.Scanner) (string, string) {
+	// Filtrar anos que têm FIIs
+	anosComFIIs := []string{}
+	for ano, meses := range dados.Anos {
+		for _, mes := range meses {
+			if len(mes.FIIs) > 0 {
+				anosComFIIs = append(anosComFIIs, ano)
+				break
+			}
+		}
+	}
+
+	if len(anosComFIIs) == 0 {
+		fmt.Println("Nenhum ano com FIIs encontrado.")
+		Pause(2000)
+		return "", ""
+	}
+
+	// Ordenar anos
+	sort.Strings(anosComFIIs)
+
+	// Seleção de ano
+	ano := ""
+	fmt.Println("Anos disponíveis:")
+	for i, a := range anosComFIIs {
+		fmt.Printf("%d - %s\n", i+1, a)
+	}
+	fmt.Print("Digite o número ou o ano desejado (YYYY): ")
+	scanner.Scan()
+	input := scanner.Text()
+	if idx, err := strconv.Atoi(input); err == nil {
+		if idx >= 1 && idx <= len(anosComFIIs) {
+			ano = anosComFIIs[idx-1]
+		}
+	}
+	if ano == "" {
+		for _, a := range anosComFIIs {
+			if a == input {
+				ano = a
+			}
+		}
+	}
+	if ano == "" {
+		fmt.Println("Ano inválido.")
+		Pause(2000)
+		return "", ""
+	}
+
+	// Filtrar meses que têm FIIs no ano selecionado
+	mesesComFIIs := []string{}
+	if dados.Anos[ano] != nil {
+		for mes, mesData := range dados.Anos[ano] {
+			if len(mesData.FIIs) > 0 {
+				mesesComFIIs = append(mesesComFIIs, mes)
+			}
+		}
+	}
+
+	if len(mesesComFIIs) == 0 {
+		fmt.Println("Nenhum mês com FIIs encontrado neste ano.")
+		Pause(2000)
+		return "", ""
+	}
+
+	// Ordenar meses
+	sort.Strings(mesesComFIIs)
+
+	// Seleção de mês
+	mes := ""
+	fmt.Println("Meses disponíveis:")
+	for i, m := range mesesComFIIs {
+		fmt.Printf("%d - %s\n", i+1, NomeMes(m))
+	}
+	fmt.Print("Digite o número ou o mês desejado (MM): ")
+	scanner.Scan()
+	input = scanner.Text()
+	if idx, err := strconv.Atoi(input); err == nil {
+		if idx >= 1 && idx <= len(mesesComFIIs) {
+			mes = mesesComFIIs[idx-1]
+		}
+	}
+	if mes == "" {
+		for _, m := range mesesComFIIs {
+			if m == input {
+				mes = m
+			}
+		}
+	}
+	if mes == "" {
+		fmt.Println("Mês inválido.")
+		Pause(2000)
+		return "", ""
+	}
+
+	return ano, mes
+}
+
+func AdicionarFII(dados *Dados, m *Mes, scanner *bufio.Scanner) {
+	ClearTerminal()
+	fmt.Println("╔══════════════════════════════════════════════════════╗")
+	fmt.Println("║                ADICIONAR FII                        ║")
+	fmt.Println("╚══════════════════════════════════════════════════════╝")
+
+	// Mostrar FIIs conhecidos se existirem
+	if len(dados.FIIsConhecidos) > 0 {
+		fmt.Println("\nFIIs conhecidos:")
+		for i, codigo := range dados.FIIsConhecidos {
+			fmt.Printf("%d - %s\n", i+1, codigo)
+		}
+		fmt.Println()
+	}
+
+	codigo := InputBox("Código do FII (ex: VGIR11):", scanner)
+	codigo = strings.ToUpper(strings.TrimSpace(codigo))
+	if codigo == "" {
+		return
+	}
+
+	quantidadeStr := InputBox("Quantidade de cotas:", scanner)
+	quantidade, err := strconv.Atoi(quantidadeStr)
+	if err != nil || quantidade <= 0 {
+		fmt.Println("Quantidade inválida.")
+		Pause(2000)
+		return
+	}
+
+	precoStr := InputBox("Preço por cota (R$):", scanner)
+	precoStr = strings.ReplaceAll(precoStr, ",", ".")
+	preco, err := strconv.ParseFloat(precoStr, 64)
+	if err != nil || preco <= 0 {
+		fmt.Println("Preço inválido.")
+		Pause(2000)
+		return
+	}
+
+	// Definir data padrão como hoje
+	hoje := time.Now()
+	dataStr := fmt.Sprintf("%02d/%02d/%04d", hoje.Day(), hoje.Month(), hoje.Year())
+	dataInput := InputBox("Data do aporte (DD/MM/AAAA) [Enter para hoje]:", scanner)
+	if dataInput != "" {
+		dataStr = dataInput
+	}
+
+	valorTotal := float64(quantidade) * preco
+
+	novoAporte := FIIAporte{
+		Quantidade: quantidade,
+		PrecoCota:  preco,
+		ValorTotal: valorTotal,
+		Data:       dataStr,
+	}
+
+	// Verificar se o FII já existe no mês
+	fiiExistente := EncontrarFIIPorCodigo(m.FIIs, codigo)
+	if fiiExistente != nil {
+		// Adicionar aporte ao FII existente
+		fiiExistente.Aportes = append(fiiExistente.Aportes, novoAporte)
+		fmt.Printf("\n✅ Aporte adicionado ao FII %s!\n", codigo)
+	} else {
+		// Criar novo FII
+		novoFII := FII{
+			Codigo:  codigo,
+			Aportes: []FIIAporte{novoAporte},
+		}
+		m.FIIs = append(m.FIIs, novoFII)
+		fmt.Printf("\n✅ Novo FII %s criado!\n", codigo)
+	}
+
+	// AporteFIIs não existe mais no modelo, será calculado dinamicamente
+
+	// Adicionar à lista de FIIs conhecidos
+	AdicionarFIIConhecido(dados, codigo)
+
+	fmt.Printf("Quantidade: %d cotas\n", quantidade)
+	fmt.Printf("Preço por cota: R$ %.2f\n", preco)
+	fmt.Printf("Valor total: R$ %.2f\n", valorTotal)
+	Pause(3000)
+}
+
+func EditarFII(m *Mes, scanner *bufio.Scanner) {
+	if len(m.FIIs) == 0 {
+		fmt.Println("Nenhum FII para editar.")
+		Pause(2000)
+		return
+	}
+
+	ClearTerminal()
+	fmt.Println("╔══════════════════════════════════════════════════════╗")
+	fmt.Println("║                EDITAR FII                           ║")
+	fmt.Println("╚══════════════════════════════════════════════════════╝")
+
+	fmt.Println("\nFIIs do mês:")
+	for i, fii := range m.FIIs {
+		totalQtd := 0
+		totalValor := 0.0
+		for _, aporte := range fii.Aportes {
+			totalQtd += aporte.Quantidade
+			totalValor += aporte.ValorTotal
+		}
+		fmt.Printf("%d - %s (%d cotas, R$ %.2f total, %d aportes)\n", i+1, fii.Codigo, totalQtd, totalValor, len(fii.Aportes))
+	}
+
+	opcaoStr := InputBox("Escolha o FII para editar:", scanner)
+	opcao, err := strconv.Atoi(opcaoStr)
+	if err != nil || opcao < 1 || opcao > len(m.FIIs) {
+		fmt.Println("Opção inválida.")
+		Pause(2000)
+		return
+	}
+
+	fii := &m.FIIs[opcao-1]
+
+	if len(fii.Aportes) == 0 {
+		fmt.Println("Nenhum aporte para editar neste FII.")
+		Pause(2000)
+		return
+	}
+
+	fmt.Printf("\nAportes de %s:\n", fii.Codigo)
+	for i, aporte := range fii.Aportes {
+		data := aporte.Data
+		if data == "" {
+			data = "Data não informada"
+		}
+		fmt.Printf("%d - %d cotas, R$ %.2f cada, R$ %.2f total (%s)\n", i+1, aporte.Quantidade, aporte.PrecoCota, aporte.ValorTotal, data)
+	}
+
+	apStr := InputBox("Escolha o aporte para editar:", scanner)
+	apIdx, err := strconv.Atoi(apStr)
+	if err != nil || apIdx < 1 || apIdx > len(fii.Aportes) {
+		fmt.Println("Opção inválida.")
+		Pause(2000)
+		return
+	}
+
+	ap := &fii.Aportes[apIdx-1]
+	fmt.Printf("Quantidade atual: %d\n", ap.Quantidade)
+	qtdStr := InputBox("Nova quantidade (Enter para manter):", scanner)
+	if qtdStr != "" {
+		qtd, err := strconv.Atoi(qtdStr)
+		if err == nil && qtd > 0 {
+			ap.Quantidade = qtd
+		}
+	}
+
+	fmt.Printf("Preço atual: R$ %.2f\n", ap.PrecoCota)
+	precoStr := InputBox("Novo preço por cota (Enter para manter):", scanner)
+	if precoStr != "" {
+		precoStr = strings.ReplaceAll(precoStr, ",", ".")
+		preco, err := strconv.ParseFloat(precoStr, 64)
+		if err == nil && preco > 0 {
+			ap.PrecoCota = preco
+		}
+	}
+
+	// Ao editar aporte:
+	fmt.Printf("Data atual do aporte: %s\n", ap.Data)
+	dataEdit := InputBox("Nova data (DD/MM/AAAA) [Enter para manter]:", scanner)
+	if dataEdit != "" {
+		ap.Data = dataEdit
+	}
+
+	// Recalcular valor total
+	ap.ValorTotal = float64(ap.Quantidade) * ap.PrecoCota
+	// AporteFIIs não existe mais no modelo, será calculado dinamicamente
+	fmt.Println("✅ Aporte atualizado!")
+	Pause(2000)
+}
+
+func RemoverFII(m *Mes, scanner *bufio.Scanner) {
+	if len(m.FIIs) == 0 {
+		fmt.Println("Nenhum FII para remover.")
+		Pause(2000)
+		return
+	}
+
+	ClearTerminal()
+	fmt.Println("╔══════════════════════════════════════════════════════╗")
+	fmt.Println("║               REMOVER FII/APORTE                    ║")
+	fmt.Println("╚══════════════════════════════════════════════════════╝")
+
+	fmt.Println("\nFIIs do mês:")
+	for i, fii := range m.FIIs {
+		totalQtd := 0
+		totalValor := 0.0
+		for _, aporte := range fii.Aportes {
+			totalQtd += aporte.Quantidade
+			totalValor += aporte.ValorTotal
+		}
+		fmt.Printf("%d - %s (%d cotas, R$ %.2f total, %d aportes)\n", i+1, fii.Codigo, totalQtd, totalValor, len(fii.Aportes))
+	}
+
+	opcaoStr := InputBox("Escolha o FII para remover aporte ou o FII inteiro:", scanner)
+	opcao, err := strconv.Atoi(opcaoStr)
+	if err != nil || opcao < 1 || opcao > len(m.FIIs) {
+		fmt.Println("Opção inválida.")
+		Pause(2000)
+		return
+	}
+
+	fii := &m.FIIs[opcao-1]
+
+	if len(fii.Aportes) == 0 {
+		fmt.Println("Nenhum aporte para remover neste FII.")
+		Pause(2000)
+		return
+	}
+
+	fmt.Printf("\nAportes de %s:\n", fii.Codigo)
+	for i, aporte := range fii.Aportes {
+		data := aporte.Data
+		if data == "" {
+			data = "Data não informada"
+		}
+		fmt.Printf("%d - %d cotas, R$ %.2f cada, R$ %.2f total (%s)\n", i+1, aporte.Quantidade, aporte.PrecoCota, aporte.ValorTotal, data)
+	}
+	fmt.Printf("%d - Remover FII inteiro\n", len(fii.Aportes)+1)
+
+	apStr := InputBox("Escolha o aporte para remover ou o FII inteiro:", scanner)
+	apIdx, err := strconv.Atoi(apStr)
+	if err != nil || apIdx < 1 || apIdx > len(fii.Aportes)+1 {
+		fmt.Println("Opção inválida.")
+		Pause(2000)
+		return
+	}
+
+	if apIdx == len(fii.Aportes)+1 {
+		// Remover FII inteiro
+		m.FIIs = append(m.FIIs[:opcao-1], m.FIIs[opcao:]...)
+		fmt.Println("✅ FII removido!")
+		Pause(2000)
+		return
+	}
+
+	// Remover aporte específico
+	fii.Aportes = append(fii.Aportes[:apIdx-1], fii.Aportes[apIdx:]...)
+	// AporteFIIs não existe mais no modelo, será calculado dinamicamente
+	fmt.Println("✅ Aporte removido!")
+	Pause(2000)
+}
+
+func MostrarFIIsMes(m *Mes, mes, ano string, scanner *bufio.Scanner) {
+	ClearTerminal()
+	fmt.Printf("╔══════════════════════════════════════════════════════╗\n")
+	fmt.Printf("║                FIIs - %s/%s                        ║\n", NomeMes(mes), ano)
+	fmt.Printf("╚══════════════════════════════════════════════════════╝\n")
+
+	if len(m.FIIs) == 0 {
+		fmt.Println("\nNenhum FII registrado neste mês.")
+	} else {
+		fmt.Printf("\nTotal de FIIs: %d\n", len(m.FIIs))
+		fmt.Printf("Valor total investido: R$ %s\n", FormatFloatBR(CalcularValorTotalFIIs(m.FIIs)))
+		fmt.Println("\nDetalhes:")
+		fmt.Println("---------------------------------------")
+
+		for i, fii := range m.FIIs {
+			totalQtd := 0
+			totalValor := 0.0
+			for _, aporte := range fii.Aportes {
+				totalQtd += aporte.Quantidade
+				totalValor += aporte.ValorTotal
+			}
+			fmt.Printf("%d. %s\n", i+1, fii.Codigo)
+			fmt.Printf("   Total: %d cotas, R$ %.2f\n", totalQtd, totalValor)
+			for _, aporte := range fii.Aportes {
+				data := aporte.Data
+				if data == "" {
+					data = "Data não informada"
+				}
+				fmt.Printf("   Aporte (%s): %d cotas, R$ %.2f cada, R$ %.2f total\n", data, aporte.Quantidade, aporte.PrecoCota, aporte.ValorTotal)
+			}
+			fmt.Println("---------------------------------------")
+		}
+	}
+
+	InputBox("Pressione Enter para continuar...", scanner)
+}
+
+func MostrarFIIsConhecidos(dados *Dados, scanner *bufio.Scanner) {
+	for {
+		ClearTerminal()
+		fmt.Println("╔══════════════════════════════════════════════════════╗")
+		fmt.Println("║              FIIs CONHECIDOS                        ║")
+		fmt.Println("╠══════════════════════════════════════════════════════╣")
+		fmt.Println("║ 1. Ver lista de FIIs conhecidos                     ║")
+		fmt.Println("║ 2. Remover FII conhecido                           ║")
+		fmt.Println("║ 3. Voltar                                          ║")
+		fmt.Println("╚══════════════════════════════════════════════════════╝")
+
+		opcao := InputBox("Escolha uma opção:", scanner)
+		switch opcao {
+		case "1":
+			MostrarListaFIIsConhecidos(dados, scanner)
+		case "2":
+			RemoverFIIConhecido(dados, scanner)
+		case "3":
+			return
+		default:
+			fmt.Println("Opção inválida.")
+			Pause(2000)
+		}
+	}
+}
+
+func MostrarListaFIIsConhecidos(dados *Dados, scanner *bufio.Scanner) {
+	ClearTerminal()
+	fmt.Println("╔══════════════════════════════════════════════════════╗")
+	fmt.Println("║              FIIs CONHECIDOS                        ║")
+	fmt.Println("╚══════════════════════════════════════════════════════╝")
+
+	if len(dados.FIIsConhecidos) == 0 {
+		fmt.Println("\nNenhum FII conhecido ainda.")
+	} else {
+		fmt.Printf("\nTotal de FIIs conhecidos: %d\n", len(dados.FIIsConhecidos))
+		fmt.Println("\nLista:")
+		for i, codigo := range dados.FIIsConhecidos {
+			fmt.Printf("%d - %s\n", i+1, codigo)
+		}
+	}
+
+	InputBox("Pressione Enter para continuar...", scanner)
+}
+
+func RemoverFIIConhecido(dados *Dados, scanner *bufio.Scanner) {
+	if len(dados.FIIsConhecidos) == 0 {
+		ClearTerminal()
+		fmt.Println("Nenhum FII conhecido para remover.")
+		Pause(2000)
+		return
+	}
+
+	ClearTerminal()
+	fmt.Println("╔══════════════════════════════════════════════════════╗")
+	fmt.Println("║            REMOVER FII CONHECIDO                    ║")
+	fmt.Println("╚══════════════════════════════════════════════════════╝")
+
+	fmt.Println("\nFIIs conhecidos:")
+	for i, codigo := range dados.FIIsConhecidos {
+		fmt.Printf("%d - %s\n", i+1, codigo)
+	}
+
+	opcaoStr := InputBox("Escolha o FII para remover:", scanner)
+	opcao, err := strconv.Atoi(opcaoStr)
+	if err != nil || opcao < 1 || opcao > len(dados.FIIsConhecidos) {
+		fmt.Println("Opção inválida.")
+		Pause(2000)
+		return
+	}
+
+	fiiParaRemover := dados.FIIsConhecidos[opcao-1]
+	confirm := InputBox(fmt.Sprintf("Tem certeza que deseja remover '%s' da lista de FIIs conhecidos? (s/n): ", fiiParaRemover), scanner)
+	confirm = strings.TrimSpace(strings.ToLower(confirm))
+	if confirm == "s" || confirm == "sim" {
+		// Remover o FII da lista
+		dados.FIIsConhecidos = append(dados.FIIsConhecidos[:opcao-1], dados.FIIsConhecidos[opcao:]...)
+		fmt.Printf("✅ FII '%s' removido da lista de conhecidos!\n", fiiParaRemover)
+	} else {
+		fmt.Println("Operação cancelada.")
+	}
+	Pause(2000)
+}
+
+func GerenciarDividendosEVendas(dados *Dados, scanner *bufio.Scanner) {
+	// Seleção de ano e mês apenas para períodos que têm FIIs
+	ano, mes := SelecionarAnoMesComFIIs(dados, scanner)
+	if ano == "" || mes == "" {
+		return
+	}
+
+	if dados.Anos[ano] == nil {
+		dados.Anos[ano] = make(Ano)
+	}
+
+	mesData := dados.Anos[ano][mes]
+	m := &mesData
+
+	for {
+		ClearTerminal()
+		fmt.Printf("╔══════════════════════════════════════════════════════╗\n")
+		fmt.Printf("║         DIVIDENDOS E VENDAS - %s/%s                ║\n", NomeMes(mes), ano)
+		fmt.Printf("╠══════════════════════════════════════════════════════╣\n")
+		fmt.Printf("║ 1. Adicionar dividendos                             ║\n")
+		fmt.Printf("║ 2. Registrar venda de cotas                         ║\n")
+		fmt.Printf("║ 3. Ver resumo de dividendos e vendas                ║\n")
+		fmt.Printf("║ 4. Voltar                                           ║\n")
+		fmt.Printf("╚══════════════════════════════════════════════════════╝\n")
+
+		opcao := InputBox("Escolha uma opção:", scanner)
+		switch opcao {
+		case "1":
+			AdicionarDividendos(m, scanner)
+		case "2":
+			RegistrarVendaCotas(m, scanner)
+		case "3":
+			MostrarResumoDividendosEVendas(m, mes, ano, scanner)
+		case "4":
+			// Salvar as mudanças no mês
+			dados.Anos[ano][mes] = *m
+			return
+		default:
+			fmt.Println("Opção inválida.")
+			Pause(2000)
+		}
+	}
+}
+
+func AdicionarDividendos(m *Mes, scanner *bufio.Scanner) {
+	if len(m.FIIs) == 0 {
+		fmt.Println("Nenhum FII registrado neste mês.")
+		Pause(2000)
+		return
+	}
+
+	ClearTerminal()
+	fmt.Println("╔══════════════════════════════════════════════════════╗")
+	fmt.Println("║              ADICIONAR DIVIDENDOS                    ║")
+	fmt.Println("╚══════════════════════════════════════════════════════╝")
+
+	fmt.Println("\nFIIs do mês:")
+	for i, fii := range m.FIIs {
+		fmt.Printf("%d - %s (Dividendos atuais: R$ %.2f)\n", i+1, fii.Codigo, fii.Dividendos)
+	}
+
+	opcaoStr := InputBox("Escolha o FII para adicionar dividendos:", scanner)
+	opcao, err := strconv.Atoi(opcaoStr)
+	if err != nil || opcao < 1 || opcao > len(m.FIIs) {
+		fmt.Println("Opção inválida.")
+		Pause(2000)
+		return
+	}
+
+	fii := &m.FIIs[opcao-1]
+	fmt.Printf("Dividendos atuais de %s: R$ %.2f\n", fii.Codigo, fii.Dividendos)
+
+	valorStr := InputBox("Digite o valor dos dividendos (R$):", scanner)
+	valorStr = strings.ReplaceAll(valorStr, ",", ".")
+	valor, err := strconv.ParseFloat(valorStr, 64)
+	if err != nil || valor < 0 {
+		fmt.Println("Valor inválido.")
+		Pause(2000)
+		return
+	}
+
+	fii.Dividendos = valor
+	fmt.Printf("✅ Dividendos de R$ %.2f definidos para %s!\n", valor, fii.Codigo)
+	Pause(2000)
+}
+
+func RegistrarVendaCotas(m *Mes, scanner *bufio.Scanner) {
+	if len(m.FIIs) == 0 {
+		fmt.Println("Nenhum FII registrado neste mês.")
+		Pause(2000)
+		return
+	}
+
+	ClearTerminal()
+	fmt.Println("╔══════════════════════════════════════════════════════╗")
+	fmt.Println("║            REGISTRAR VENDA DE COTAS                  ║")
+	fmt.Println("╚══════════════════════════════════════════════════════╝")
+
+	fmt.Println("\nFIIs do mês:")
+	for i, fii := range m.FIIs {
+		totalQtd := 0
+		for _, aporte := range fii.Aportes {
+			totalQtd += aporte.Quantidade
+		}
+		fmt.Printf("%d - %s (%d cotas disponíveis)\n", i+1, fii.Codigo, totalQtd)
+	}
+
+	opcaoStr := InputBox("Escolha o FII para vender cotas:", scanner)
+	opcao, err := strconv.Atoi(opcaoStr)
+	if err != nil || opcao < 1 || opcao > len(m.FIIs) {
+		fmt.Println("Opção inválida.")
+		Pause(2000)
+		return
+	}
+
+	fii := &m.FIIs[opcao-1]
+
+	if len(fii.Aportes) == 0 {
+		fmt.Println("Nenhum aporte disponível para venda neste FII.")
+		Pause(2000)
+		return
+	}
+
+	fmt.Println("\nAportes disponíveis:")
+	for i, aporte := range fii.Aportes {
+		data := aporte.Data
+		if data == "" {
+			data = "Data não informada"
+		}
+		fmt.Printf("%d - %d cotas, R$ %.2f cada, R$ %.2f total (%s)\n", i+1, aporte.Quantidade, aporte.PrecoCota, aporte.ValorTotal, data)
+	}
+
+	apStr := InputBox("Escolha o aporte do qual deseja vender cotas:", scanner)
+	apIdx, err := strconv.Atoi(apStr)
+	if err != nil || apIdx < 1 || apIdx > len(fii.Aportes) {
+		fmt.Println("Opção inválida.")
+		Pause(2000)
+		return
+	}
+
+	aporte := &fii.Aportes[apIdx-1]
+	cotasDisponiveis := aporte.Quantidade
+	if cotasDisponiveis <= 0 {
+		fmt.Println("Não há cotas disponíveis para venda neste aporte.")
+		Pause(2000)
+		return
+	}
+
+	fmt.Printf("Cotas disponíveis para venda deste aporte: %d\n", cotasDisponiveis)
+	qtdStr := InputBox("Quantidade de cotas a vender:", scanner)
+	qtd, err := strconv.Atoi(qtdStr)
+	if err != nil || qtd <= 0 || qtd > cotasDisponiveis {
+		fmt.Println("Quantidade inválida.")
+		Pause(2000)
+		return
+	}
+
+	precoStr := InputBox("Preço por cota na venda (R$):", scanner)
+	precoStr = strings.ReplaceAll(precoStr, ",", ".")
+	precoVenda, err := strconv.ParseFloat(precoStr, 64)
+	if err != nil || precoVenda <= 0 {
+		fmt.Println("Preço inválido.")
+		Pause(2000)
+		return
+	}
+
+	taxasStr := InputBox("Taxas pagas na venda (R$):", scanner)
+	taxasStr = strings.ReplaceAll(taxasStr, ",", ".")
+	taxas, err := strconv.ParseFloat(taxasStr, 64)
+	if err != nil || taxas < 0 {
+		fmt.Println("Taxas inválidas.")
+		Pause(2000)
+		return
+	}
+
+	dataVenda := InputBox("Data da venda (DD/MM/AAAA) [Enter para hoje]:", scanner)
+	if dataVenda == "" {
+		hoje := time.Now()
+		dataVenda = fmt.Sprintf("%02d/%02d/%04d", hoje.Day(), hoje.Month(), hoje.Year())
+	}
+
+	// Calcular valores
+	valorTotalVenda := float64(qtd) * precoVenda
+	custoTotal := float64(qtd) * aporte.PrecoCota
+	lucro := (valorTotalVenda - taxas) - custoTotal
+	darf := 0.0
+	if lucro > 0 {
+		darf = lucro * 0.20 // 20%
+	}
+
+	// Atualizar quantidade de cotas do aporte
+	aporte.Quantidade -= qtd
+
+	// Registrar venda
+	venda := FIIVenda{
+		Quantidade: qtd,
+		PrecoVenda: precoVenda,
+		ValorTotal: valorTotalVenda,
+		LucroVenda: lucro,
+		DARF:       darf,
+		Data:       dataVenda,
+		Taxas:      taxas,
+		AporteData: aporte.Data,
+	}
+	fii.Vendas = append(fii.Vendas, venda)
+
+	fmt.Println("╔══════════════════════════════════════════════════════╗")
+	fmt.Println("║                RESUMO DA VENDA                      ║")
+	fmt.Println("╚══════════════════════════════════════════════════════╝")
+	fmt.Printf("Aporte de origem: %s\n", aporte.Data)
+	fmt.Printf("Quantidade vendida: %d cotas\n", qtd)
+	fmt.Printf("Preço de venda: R$ %.2f\n", precoVenda)
+	fmt.Printf("Valor total da venda: R$ %.2f\n", valorTotalVenda)
+	fmt.Printf("Preço médio de compra: R$ %.2f\n", aporte.PrecoCota)
+	fmt.Printf("Custo total de compra: R$ %.2f\n", custoTotal)
+	fmt.Printf("Taxas pagas: R$ %.2f\n", taxas)
+	fmt.Printf("Lucro líquido: R$ %.2f\n", lucro)
+	if darf > 0 {
+		fmt.Printf("DARF a pagar (20%%): R$ %.2f\n", darf)
+	} else {
+		fmt.Println("Não há DARF a pagar (sem lucro na venda).")
+	}
+	Pause(4000)
+}
+
+func MostrarResumoDividendosEVendas(m *Mes, mes, ano string, scanner *bufio.Scanner) {
+	ClearTerminal()
+	fmt.Printf("╔══════════════════════════════════════════════════════╗\n")
+	fmt.Printf("║         DIVIDENDOS E VENDAS - %s/%s                ║\n", NomeMes(mes), ano)
+	fmt.Printf("╚══════════════════════════════════════════════════════╝\n")
+
+	if len(m.FIIs) == 0 {
+		fmt.Println("\nNenhum FII registrado neste mês.")
+	} else {
+		totalDividendos := 0.0
+		totalVendas := 0.0
+		totalLucroVendas := 0.0
+		totalDARF := 0.0
+
+		fmt.Println("\nResumo por FII:")
+		fmt.Println("---------------------------------------")
+
+		for i, fii := range m.FIIs {
+			fmt.Printf("%d. %s\n", i+1, fii.Codigo)
+			fmt.Printf("   Dividendos: R$ %.2f\n", fii.Dividendos)
+
+			if len(fii.Vendas) > 0 {
+				fmt.Printf("   Vendas:\n")
+				for idx, venda := range fii.Vendas {
+					fmt.Printf("     Venda %d: %d cotas, R$ %.2f cada, R$ %.2f total\n",
+						idx+1, venda.Quantidade, venda.PrecoVenda, venda.ValorTotal)
+					fmt.Printf("     Lucro: R$ %.2f, DARF: R$ %.2f\n", venda.LucroVenda, venda.DARF)
+				}
+			} else {
+				fmt.Printf("   Nenhuma venda registrada\n")
+			}
+
+			totalDividendos += fii.Dividendos
+			for _, venda := range fii.Vendas {
+				totalVendas += venda.ValorTotal
+				totalLucroVendas += venda.LucroVenda
+				totalDARF += venda.DARF
+			}
+
+			fmt.Println("---------------------------------------")
+		}
+
+		fmt.Printf("\nTOTAIS DO MÊS:\n")
+		fmt.Printf("Total de dividendos: R$ %.2f\n", totalDividendos)
+		fmt.Printf("Total de vendas: R$ %.2f\n", totalVendas)
+		fmt.Printf("Total de lucro das vendas: R$ %.2f\n", totalLucroVendas)
+		fmt.Printf("Total de DARF a pagar: R$ %.2f\n", totalDARF)
+		fmt.Printf("Lucro FIIs: R$ %.2f\n", totalDividendos+totalLucroVendas-totalDARF)
+	}
+
+	InputBox("Pressione Enter para continuar...", scanner)
+}
+
+func MostrarDARFAPagar(dados *Dados, scanner *bufio.Scanner) {
+	ClearTerminal()
+	fmt.Println("╔══════════════════════════════════════════════════════╗")
+	fmt.Println("║                DARF A PAGAR                          ║")
+	fmt.Println("╚══════════════════════════════════════════════════════╝")
+
+	// Coletar todos os DARFs por mês/ano
+	darfPorMes := make(map[string]map[string]float64) // ano -> mes -> valor
+	totalDARF := 0.0
+
+	for ano, mesesMap := range dados.Anos {
+		for mes, m := range mesesMap {
+			darfMes := CalcularDARFTotal(m.FIIs)
+			if darfMes > 0 {
+				if darfPorMes[ano] == nil {
+					darfPorMes[ano] = make(map[string]float64)
+				}
+				darfPorMes[ano][mes] = darfMes
+				totalDARF += darfMes
+			}
+		}
+	}
+
+	if totalDARF == 0 {
+		fmt.Println("\n✅ Nenhum DARF a pagar!")
+	} else {
+		fmt.Printf("\n⚠️  ATENÇÃO: Você tem DARF a pagar!\n")
+		fmt.Printf("Total de DARF: R$ %.2f\n\n", totalDARF)
+
+		// Ordenar anos e meses
+		anos := OrdenarChaves(darfPorMes)
+		for _, ano := range anos {
+			meses := OrdenarChaves(darfPorMes[ano])
+			fmt.Printf("Ano %s:\n", ano)
+			for _, mes := range meses {
+				darf := darfPorMes[ano][mes]
+				fmt.Printf("  %s: R$ %.2f\n", NomeMes(mes), darf)
+
+				// Calcular prazo de pagamento
+				ultimoDia, mesPagamento, anoPagamento := CalcularPrazoDARF(mes, ano)
+				fmt.Printf("    Prazo: até %02d/%02d/%d\n", ultimoDia, mesPagamento, anoPagamento)
+			}
+			fmt.Println()
+		}
+
+		fmt.Println("💡 Dica: DARF pode ser pago até o último dia do mês seguinte")
+		fmt.Println("   ao mês em que ocorreu a venda.")
+	}
+
+	InputBox("Pressione Enter para continuar...", scanner)
 }

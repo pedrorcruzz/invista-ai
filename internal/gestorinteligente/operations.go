@@ -103,17 +103,15 @@ func removerProduto(reader *bufio.Reader, lista *ListaProdutos) {
 	fmt.Printf("\nTem certeza que deseja remover '%s'? (s/n): ", lista.Produtos[idx].Nome)
 	confirm, _ := reader.ReadString('\n')
 	confirm = strings.TrimSpace(strings.ToLower(confirm))
-	if confirm != "s" && confirm != "sim" {
+	if confirm == "s" || confirm == "sim" {
+		lista.Produtos = slices.Delete(lista.Produtos, idx, idx+1)
+
+		fmt.Println(divisor)
+		fmt.Println("✅ Produto removido!")
+		fmt.Println(divisor)
+	} else {
 		fmt.Println("Operação cancelada.")
-		time.Sleep(2 * time.Second)
-		return
 	}
-
-	lista.Produtos = slices.Delete(lista.Produtos, idx, idx+1)
-
-	fmt.Println(divisor)
-	fmt.Println("✅ Produto removido!")
-	fmt.Println(divisor)
 
 	time.Sleep(2 * time.Second)
 }
