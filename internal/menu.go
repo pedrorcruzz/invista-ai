@@ -734,6 +734,10 @@ func EditarFII(m *Mes, scanner *bufio.Scanner) {
 			ap.ValorTotalManual = nil
 			ap.ValorTotal = float64(ap.Quantidade) * ap.PrecoCota
 		}
+	} else {
+		// Se deixou vazio, limpar valor manual e recalcular
+		ap.ValorTotalManual = nil
+		ap.ValorTotal = float64(ap.Quantidade) * ap.PrecoCota
 	}
 
 	// Ao editar aporte:
@@ -743,9 +747,10 @@ func EditarFII(m *Mes, scanner *bufio.Scanner) {
 		ap.Data = dataEdit
 	}
 
-	// Recalcular valor total
-	ap.ValorTotal = float64(ap.Quantidade) * ap.PrecoCota
-	// AporteFIIs não existe mais no modelo, será calculado dinamicamente
+	// Recalcular valor total apenas se não tiver valor manual
+	if ap.ValorTotalManual == nil {
+		ap.ValorTotal = float64(ap.Quantidade) * ap.PrecoCota
+	}
 	fmt.Println("✅ Aporte atualizado!")
 	Pause(2000)
 }
