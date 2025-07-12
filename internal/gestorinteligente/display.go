@@ -45,13 +45,11 @@ func mostrarResumo(lista ListaProdutos) {
 		valorRestanteGastar = 0
 	}
 
-	nomeMes := nomesMeses[mesAlvo-1]
+	// nomeMes removido pois não é mais usado
 
 	divisorResumo := strings.Repeat("-", 60)
-	titulo := fmt.Sprintf(" RESUMO DO MÊS (%02d/%d - %s) ", mesAlvo, anoAlvo, nomeMes)
-
-	fmt.Println("\n" + divisorResumo)
-	fmt.Println(titulo)
+	tituloPrograma := "================== InvistAI =================="
+	fmt.Println("\n" + tituloPrograma)
 	fmt.Println(divisorResumo)
 
 	fmt.Printf("Lucro mensal: R$%.2f\n", lista.LucroMensal)

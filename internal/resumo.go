@@ -36,57 +36,117 @@ func GetResumoTotalAcumuladoStr(dados Dados) string {
 	if len(anos) == 0 {
 		return "Nenhum dado disponível ainda."
 	}
+	// Acumuladores SEM filtro (para aportes, FIIs, saídas, retiradas)
 	aporteRFSoFar := 0.0
 	aporteFIIsSoFar := 0.0
 	saidaSoFar := 0.0
-	valorBrutoFinal := 0.0
-	valorLiquidoRFFinal := 0.0
 	lucrosRetiradosTotal := 0.0
+
+	// Acumuladores COM filtro (para lucros líquidos e saldo final)
+	// valorBrutoFinal removido pois não é mais usado
 	lucroLiquidoAcumulado := 0.0
 	lucroLiquidoFIIsAcumulado := 0.0
 	lucroMesLiquidoTotalAcumulado := 0.0
+
+	// Novo: pegar sempre o saldo do último mês para os valores finais
+	ultimoBrutoFinal := 0.0
+	ultimoLiquidoFinal := 0.0
+
 	saldoAnterior := 0.0
 	for _, ano := range anos {
 		mesesMap := dados.Anos[ano]
 		meses := OrdenarChaves(mesesMap)
 		for _, mes := range meses {
 			m := mesesMap[mes]
+			// SEM filtro: acumula aportes, FIIs, saídas, retiradas
+			aporteRFSoFar += m.AporteRF
+			aporteFIIsSoFar += m.AporteFIIs
+			saidaSoFar += m.Saida
+			lucrosRetiradosTotal += m.LucroRetirado
+
+			// Sempre pega o saldo do último mês
+			ultimoBrutoFinal = m.ValorBrutoRF
+			ultimoLiquidoFinal = m.ValorLiquidoRF
+
+			// Cálculo do lucro líquido (COM filtro)
 			lucroMesBruto := m.ValorBrutoRF - (saldoAnterior + m.AporteRF - m.Saida)
 			impostos := m.ValorBrutoRF - m.ValorLiquidoRF
 			lucroMesLiquidoRF := lucroMesBruto - impostos - m.LucroRetirado
 			lucroLiquidoFIIs := m.LucroLiquidoFIIs
 			lucroMesLiquidoTotal := lucroMesLiquidoRF + lucroLiquidoFIIs
+
 			lucroValido := lucroMesBruto > impostos
 			if lucroValido {
-				aporteRFSoFar += m.AporteRF
-				aporteFIIsSoFar += m.AporteFIIs
-				saidaSoFar += m.Saida
-				lucrosRetiradosTotal += m.LucroRetirado
-				valorBrutoFinal = m.ValorBrutoRF
-				valorLiquidoRFFinal = m.ValorLiquidoRF
 				lucroLiquidoAcumulado += lucroMesLiquidoRF
 				lucroLiquidoFIIsAcumulado += lucroLiquidoFIIs
 				lucroMesLiquidoTotalAcumulado += lucroMesLiquidoTotal
-				saldoAnterior = m.ValorBrutoRF
 			}
+			saldoAnterior = m.ValorBrutoRF
 		}
 	}
+	// Totais
 	totalAportadoBruto := aporteRFSoFar + aporteFIIsSoFar
 	totalAportadoLiquido := totalAportadoBruto - saidaSoFar
-	lucroBrutoTotal := valorBrutoFinal - totalAportadoLiquido
-	return fmt.Sprintf(`--- Resumo Total Acumulado ---
+	// Novo: calcular aportes e saídas só de RF para o lucro bruto total
+	totalAportadoBrutoRF := aporteRFSoFar
+	totalAportadoLiquidoRF := totalAportadoBrutoRF - saidaSoFar
+	lucroBrutoTotal := ultimoBrutoFinal - totalAportadoLiquidoRF
+
+	// Porcentagens e valores de RF e FIIs (bruto)
+	percRFBruto := 0.0
+	percFIIsBruto := 0.0
+	if totalAportadoBruto > 0 {
+		percRFBruto = (aporteRFSoFar / totalAportadoBruto) * 100
+		percFIIsBruto = (aporteFIIsSoFar / totalAportadoBruto) * 100
+	}
+
+	// Porcentagens e valores de RF e FIIs (líquido, saídas só afetam RF)
+	rfLiquido := aporteRFSoFar - saidaSoFar
+	fiisLiquido := aporteFIIsSoFar // FIIs não tem saída
+	percRFLiquido := 0.0
+	percFIIsLiquido := 0.0
+	if totalAportadoLiquido > 0 {
+		percRFLiquido = (rfLiquido / totalAportadoLiquido) * 100
+		percFIIsLiquido = (fiisLiquido / totalAportadoLiquido) * 100
+	}
+
+	return fmt.Sprintf(`================== InvistAI ==================
+
+--- Total Investido ---
+
+[APORTES BRUTOS (tudo que já foi investido)]
 Total aportado bruto: R$ %s
+  - Renda Fixa: %.2f%% (R$ %s)
+  - FIIs: %.2f%% (R$ %s)
+
+--------------------
+
+[APORTES LÍQUIDOS (após retiradas)]
 Total aportado líquido: R$ %s
+  - Renda Fixa: %.2f%% (R$ %s)
+  - FIIs: %.2f%% (R$ %s)
+
 ---------------------------------------
+
+[RENDA FIXA]
 Valor Bruto Final (RF): R$ %s
 Valor Líquido Final (RF): R$ %s
----------------------------------------
 Lucros Retirados: R$ %s
 Lucro Bruto Total (RF): R$ %s
 Lucro Líquido RF: R$ %s
+
+---------------------------------------
+
+[FIIs]
 Lucro Líquido FIIs: R$ %s
-Lucro Total Líquido (RF + FIIs): R$ %s`,
-		FormatFloatBR(totalAportadoBruto), FormatFloatBR(totalAportadoLiquido), FormatFloatBR(valorBrutoFinal), FormatFloatBR(valorLiquidoRFFinal), FormatFloatBR(lucrosRetiradosTotal), FormatFloatBR(lucroBrutoTotal), FormatFloatBR(lucroLiquidoAcumulado), FormatFloatBR(lucroLiquidoFIIsAcumulado), FormatFloatBR(lucroMesLiquidoTotalAcumulado))
+
+---------------------------------------
+
+╔════════════════════════════════════════════════════╗
+║  Lucro Total Líquido (RF + FIIs): R$ %s           ║
+╚════════════════════════════════════════════════════╝
+`,
+		FormatFloatBR(totalAportadoBruto), percRFBruto, FormatFloatBR(aporteRFSoFar), percFIIsBruto, FormatFloatBR(aporteFIIsSoFar), FormatFloatBR(totalAportadoLiquido), percRFLiquido, FormatFloatBR(rfLiquido), percFIIsLiquido, FormatFloatBR(fiisLiquido), FormatFloatBR(ultimoBrutoFinal), FormatFloatBR(ultimoLiquidoFinal), FormatFloatBR(lucrosRetiradosTotal), FormatFloatBR(lucroBrutoTotal), FormatFloatBR(lucroLiquidoAcumulado), FormatFloatBR(lucroLiquidoFIIsAcumulado), FormatFloatBR(lucroMesLiquidoTotalAcumulado))
 }
 
 func GetResumoMesAtualStr(dados Dados) string {
@@ -141,9 +201,9 @@ func MostrarResumoAno(dados Dados, ano string, horizontal bool) {
 	aporteRFSoFar := 0.0
 	aporteFIIsSoFar := 0.0
 	saidaSoFar := 0.0
-	valorBrutoFinal := 0.0
-	valorLiquidoRFFinal := 0.0
 	lucrosRetiradosTotal := 0.0
+	valorBrutoFinal := 0.0
+	// valorLiquidoRFFinal removido pois não é mais usado
 	lucroLiquidoAcumulado := 0.0
 	lucroLiquidoFIIsAcumulado := 0.0
 	lucroMesLiquidoTotalAcumulado := 0.0
@@ -201,7 +261,6 @@ func MostrarResumoAno(dados Dados, ano string, horizontal bool) {
 			saidaSoFar += m.Saida
 			lucrosRetiradosTotal += m.LucroRetirado
 			valorBrutoFinal = m.ValorBrutoRF
-			valorLiquidoRFFinal = m.ValorLiquidoRF
 			lucroLiquidoAcumulado += lucroMesLiquidoRF
 			lucroLiquidoFIIsAcumulado += lucroLiquidoFIIs
 			lucroMesLiquidoTotalAcumulado += lucroMesLiquidoTotal
@@ -219,7 +278,7 @@ func MostrarResumoAno(dados Dados, ano string, horizontal bool) {
 	fmt.Printf("Total aportado bruto: R$ %s\n", FormatFloatBR(totalAportadoBruto))
 	fmt.Printf("Total aportado líquido: R$ %s\n", FormatFloatBR(totalAportadoLiquido))
 	fmt.Printf("Valor bruto final (RF): R$ %s\n", FormatFloatBR(valorBrutoFinal))
-	fmt.Printf("Valor líquido final (RF): R$ %s\n", FormatFloatBR(valorLiquidoRFFinal))
+	fmt.Printf("Valor líquido final (RF): R$ %s\n", FormatFloatBR(valorBrutoFinal))
 	fmt.Printf("Lucro bruto total (RF): R$ %s\n", FormatFloatBR(lucroBrutoTotal))
 	fmt.Printf("Lucro Líquido RF: R$ %s\n", FormatFloatBR(lucroLiquidoTotal))
 	fmt.Printf("Lucro Líquido FIIs: R$ %s\n", FormatFloatBR(lucroLiquidoFIIsTotal))

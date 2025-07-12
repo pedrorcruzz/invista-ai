@@ -21,12 +21,13 @@ func main() {
 		scanner.Scan()
 		opcao := scanner.Text()
 
-		if inMenuInicial && opcao == "4" {
+		if inMenuInicial && opcao == "5" {
 			fmt.Println("Saindo...")
+			internal.ClearTerminal()
 			return
 		}
 
-		if !inMenuInicial && opcao == "4" {
+		if !inMenuInicial && opcao == "5" {
 			internal.PrintTelaUnificada(dados)
 			inMenuInicial = true
 			continue
@@ -49,6 +50,11 @@ func main() {
 			inMenuInicial = true
 		case "3":
 			gestorinteligente.MostrarMenuGestor()
+			internal.PrintTelaUnificada(dados)
+			inMenuInicial = true
+		case "4":
+			internal.RetirarLucro(&dados, scanner)
+			internal.SalvarDados(dados)
 			internal.PrintTelaUnificada(dados)
 			inMenuInicial = true
 		default:

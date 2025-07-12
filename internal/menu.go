@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func PrintMenuPrincipalSozinho() {
@@ -77,7 +78,8 @@ func GetMenuPrincipalStr() string {
 1. Ver resumo completo
 2. Adicionar/editar mês
 3. Gestor Inteligente de Gastos
-4. Sair do programa`
+4. Retirar Lucro
+5. Sair do programa`
 }
 
 func SelecionarAno(dados Dados, scanner *bufio.Scanner) string {
@@ -112,8 +114,65 @@ func SelecionarAno(dados Dados, scanner *bufio.Scanner) string {
 }
 
 func AdicionarOuEditarMes(dados *Dados, scanner *bufio.Scanner) {
-	ano := InputBox("Digite o ano(YYYY):", scanner)
-	mes := InputBox("Digite o mês(MM):", scanner)
+	// Seleção de ano
+	anos := OrdenarChaves(dados.Anos)
+	ano := ""
+	if len(anos) > 0 {
+		fmt.Println("Anos disponíveis:")
+		for i, a := range anos {
+			fmt.Printf("%d - %s\n", i+1, a)
+		}
+		fmt.Print("Digite o número ou o ano desejado (YYYY): ")
+		scanner.Scan()
+		input := scanner.Text()
+		if idx, err := strconv.Atoi(input); err == nil {
+			if idx >= 1 && idx <= len(anos) {
+				ano = anos[idx-1]
+			}
+		}
+		if ano == "" {
+			for _, a := range anos {
+				if a == input {
+					ano = a
+				}
+			}
+		}
+	}
+	if ano == "" {
+		ano = InputBox("Digite o ano(YYYY):", scanner)
+	}
+
+	// Seleção de mês
+	mes := ""
+	mesesExistentes := []string{}
+	if dados.Anos[ano] != nil {
+		mesesExistentes = OrdenarChaves(dados.Anos[ano])
+	}
+	if len(mesesExistentes) > 0 {
+		fmt.Println("Meses disponíveis:")
+		for i, m := range mesesExistentes {
+			fmt.Printf("%d - %s\n", i+1, NomeMes(m))
+		}
+		fmt.Print("Digite o número ou o mês desejado (MM): ")
+		scanner.Scan()
+		input := scanner.Text()
+		if idx, err := strconv.Atoi(input); err == nil {
+			if idx >= 1 && idx <= len(mesesExistentes) {
+				mes = mesesExistentes[idx-1]
+			}
+		}
+		if mes == "" {
+			for _, m := range mesesExistentes {
+				if m == input {
+					mes = m
+				}
+			}
+		}
+	}
+	if mes == "" {
+		mes = InputBox("Digite o mês(MM):", scanner)
+	}
+
 	if dados.Anos[ano] == nil {
 		dados.Anos[ano] = make(Ano)
 	}
@@ -217,4 +276,29 @@ func PrintCaixa(lines []string) {
 func ParseFloatBR(s string) (float64, error) {
 	s = strings.ReplaceAll(s, ",", ".")
 	return strconv.ParseFloat(s, 64)
+}
+
+// Função para retirar lucro do mês atual
+func RetirarLucro(dados *Dados, scanner *bufio.Scanner) {
+	hoje := time.Now()
+	anoAtual := fmt.Sprintf("%04d", hoje.Year())
+	mesAtual := fmt.Sprintf("%02d", int(hoje.Month()))
+
+	if dados.Anos[anoAtual] == nil {
+		dados.Anos[anoAtual] = make(Ano)
+	}
+	m := dados.Anos[anoAtual][mesAtual]
+
+	PrintCaixa([]string{"Digite o valor de lucro a retirar (será descontado do Lucro Líquido RF + FIIs):"})
+	fmt.Print("Valor: R$ ")
+	scanner.Scan()
+	valorStr := scanner.Text()
+	valor, err := ParseFloatBR(valorStr)
+	if err != nil || valor <= 0 {
+		PrintCaixa([]string{"❌ Valor inválido!"})
+		return
+	}
+	m.LucroRetirado += valor
+	dados.Anos[anoAtual][mesAtual] = m
+	PrintCaixa([]string{fmt.Sprintf("✅ Lucro de R$ %s retirado com sucesso!", FormatFloatBR(valor))})
 }
