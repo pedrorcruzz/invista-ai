@@ -62,9 +62,27 @@ go build -o invista-ai
 # Build da imagem
 docker build --no-cache -t invista-ai-cli .
 
-# Executar o container
-docker run -it --name invista-ai-cli invista-ai-cli
+# Executar o container (o programa roda automaticamente)
+docker run -it invista-ai-cli
 ```
+
+**Ou baixar a imagem pré-buildada:**
+
+```sh
+# Baixar e executar a imagem oficial (o programa roda automaticamente)
+docker pull pedrorcruzz/invista-ai-cli:v1.1
+docker run -it pedrorcruzz/invista-ai-cli:v1.1
+```
+
+**💡 Dica:** O programa executa automaticamente quando você roda o container. Se quiser acessar o shell do container (para debug), use: `docker run -it invista-ai-cli sh`
+
+**Para executar um container já rodando:**
+
+```sh
+docker exec -it invista-ai-cli /app/invista-ai-cli
+```
+
+**📦 Imagem disponível em:** https://hub.docker.com/repository/docker/pedrorcruzz/invista-ai-cli/general
 
 **Nota:** O Docker inclui automaticamente todos os dados necessários (pasta `data` e arquivos `.json`) na imagem.
 

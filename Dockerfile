@@ -16,5 +16,8 @@ COPY --from=builder /app/data ./data
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/README.md ./README.md
 
+# Garantir que o executável tem permissões de execução
+RUN chmod +x /app/invista-ai-cli
+
 ENTRYPOINT ["/app/invista-ai-cli"] 
 
