@@ -25,13 +25,14 @@
 - 🧠 <b>Gestor Inteligente de Gastos</b> — Planeje compras, gerencie parcelas e receba recomendações inteligentes.
 - 💾 <b>Dados Locais</b> — Todos os seus dados são salvos localmente em arquivos JSON simples.
 - 🖥️ <b>Interface Bonita no Terminal</b> — Menus modernos com bordas para uma experiência CLI agradável.
-- 🐚 <b>CLI Universal</b> — Use com <code>go run</code>, construa um binário ou chame de scripts <code>fish</code>, <code>zsh</code>, <code>sh</code> em qualquer lugar.
+- 🐚 <b>CLI Universal</b> — Use com <code>go run</code>, construa um binário, use Docker ou chame de scripts <code>fish</code>, <code>zsh</code>, <code>sh</code> em qualquer lugar.
 
 ---
 
 ## 📋 Requisitos
 
 - É necessário ter o [Go](https://golang.org/dl/) instalado na sua máquina (versão recomendada: Go 1.20 ou superior).
+- **Ou** ter o [Docker](https://docs.docker.com/get-docker/) instalado para usar a versão containerizada.
 
 ## 🚀 Primeiros Passos
 
@@ -54,6 +55,18 @@ go run main.go
 go build -o invista-ai
 ./invista-ai
 ```
+
+### 4. Usar com Docker
+
+```sh
+# Build da imagem
+docker build -t invista-ai-cli .
+
+# Executar o container
+docker run -it invista-ai-cli
+```
+
+**Nota:** O Docker inclui automaticamente todos os dados necessários (pasta `data` e arquivos `.json`) na imagem.
 
 ---
 
