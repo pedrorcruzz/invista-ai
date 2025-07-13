@@ -60,10 +60,10 @@ go build -o invista-ai
 
 ```sh
 # Build da imagem
-docker build -t invista-ai-cli .
+docker build --no-cache -t invista-ai-cli .
 
 # Executar o container
-docker run -it invista-ai-cli
+docker run -it --name invista-ai-cli invista-ai-cli
 ```
 
 **Nota:** O Docker inclui automaticamente todos os dados necessários (pasta `data` e arquivos `.json`) na imagem.
