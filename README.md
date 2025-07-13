@@ -1,8 +1,17 @@
 <p align="center">
-  <img src="public/logo.png" alt="Logo InvistAI" width="180"/>
+  <img src="public/logo.png" alt="Logo InvistAI" width="240" style="border-radius: 50%;" />
 </p>
 
 <h1 align="center">Versão CLI</h1>
+
+<p align="center">
+  <a href="#-funcionalidades">Funcionalidades</a> •
+  <a href="#-requisitos">Instalação</a> •
+  <a href="#automatizando-o-acesso-de-qualquer-lugar-no-terminal">Automatize o Terminal</a> •
+  <a href="#-menus">Menu</a> •
+  <a href="#-onde-os-dados-são-salvos">Dados</a> •
+  <a href="https://github.com/pedrorcruzz/invista-ai/blob/develop/LICENSE">Licença</a>
+</p>
 
 <p align="center">
   <b>Gerencie seus investimentos. Controle seus gastos. Tudo no seu terminal.</b>
@@ -14,18 +23,29 @@
 
 ## ✨ Funcionalidades
 
-- 📈 <b>Controle de Investimentos</b> — Adicione/edite dados mensais, veja lucros brutos/líquidos e visualize seu progresso.
-- 🏦 <b>Controle detalhado de FIIs</b> — Gerencie cada fundo imobiliário individualmente, com múltiplos aportes por mês, registro de quantidade, preço, data e valor de cada aporte.
-- 💸 <b>Registro de dividendos e vendas</b> — Lance dividendos recebidos por FII e registre vendas de cotas por aporte, com cálculo automático de lucro e taxas.
-- 🧾 <b>Cálculo automático de DARF</b> — O sistema calcula automaticamente o imposto devido sobre vendas de FIIs, notifica o valor e o prazo de pagamento, e exibe alertas quando houver DARF a pagar.
-- 📊 <b>Resumos mensais e anuais detalhados</b> — Veja relatórios completos com percentuais de lucro por FII, separação clara entre Renda Fixa e FIIs, e visualização alinhada de todos os dados.
-- 📅 <b>Visualização de FIIs do mês</b> — Veja todos os FIIs do mês, aportes com datas, quantidades e valores, e dividendos recebidos, tudo organizado e fácil de ler.
-- 🔄 <b>Separação total entre Renda Fixa e FIIs</b> — Menus, relatórios e operações totalmente separados para cada tipo de investimento.
-- 🗑️ <b>Confirmação explícita para remoção</b> — Remoção de FIIs e produtos exige confirmação clara do usuário.
-- 🧠 <b>Gestor Inteligente de Gastos</b> — Planeje compras, gerencie parcelas e receba recomendações inteligentes.
-- 💾 <b>Dados Locais</b> — Todos os seus dados são salvos localmente em arquivos JSON simples.
-- 🖥️ <b>Interface Bonita no Terminal</b> — Menus modernos com bordas para uma experiência CLI agradável.
-- 🐚 <b>CLI Universal</b> — Use com <code>go run</code>, construa um binário, use Docker ou chame de scripts <code>fish</code>, <code>zsh</code>, <code>sh</code> em qualquer lugar.
+- <b>Controle de Investimentos</b> — Adicione/edite dados mensais, veja lucros brutos/líquidos e visualize seu progresso.
+
+- <b>Controle detalhado de FIIs</b> — Gerencie cada fundo imobiliário individualmente, com múltiplos aportes por mês, registro de quantidade, preço, data e valor de cada aporte.
+
+- <b>Registro de dividendos e vendas</b> — Lance dividendos recebidos por FII e registre vendas de cotas por aporte, com cálculo automático de lucro e taxas.
+
+- <b>Cálculo automático de DARF</b> — O sistema calcula automaticamente o imposto devido sobre vendas de FIIs, notifica o valor e o prazo de pagamento, e exibe alertas quando houver DARF a pagar.
+
+- <b>Resumos mensais e anuais detalhados</b> — Veja relatórios completos com percentuais de lucro por FII, separação clara entre Renda Fixa e FIIs, e visualização alinhada de todos os dados.
+
+- <b>Visualização de FIIs do mês</b> — Veja todos os FIIs do mês, aportes com datas, quantidades e valores, e dividendos recebidos, tudo organizado e fácil de ler.
+
+- <b>Separação total entre Renda Fixa e FIIs</b> — Menus, relatórios e operações totalmente separados para cada tipo de investimento.
+
+- <b>Confirmação explícita para remoção</b> — Remoção de FIIs e produtos exige confirmação clara do usuário.
+
+- <b>Gestor Inteligente de Gastos</b> — Planeje compras, gerencie parcelas e receba recomendações inteligentes.
+
+- <b>Dados Locais</b> — Todos os seus dados são salvos localmente em arquivos JSON simples.
+
+- <b>Interface Bonita no Terminal</b> — Menus modernos com bordas para uma experiência CLI agradável.
+
+- <b>CLI Universal</b> — Use com <code>go run</code>, construa um binário, use Docker ou chame de scripts <code>fish</code>, <code>zsh</code>, <code>sh</code> em qualquer lugar.
 
 ---
 
@@ -60,28 +80,76 @@ go build -o invista-ai
 
 #### Opção A: Build Local (Criar Imagem)
 
+<details>
+<summary>Clique aqui para ver como criar imagem Docker localmente</summary>
+
 ```sh
 # Build da imagem localmente
 docker build --no-cache -t invista-ai-cli .
 
-# Executar o container
+# Executar o container (sem volume - dados ficam no container)
 docker run -it invista-ai-cli
+
+# Executar o container com volume para persistir dados
+docker run -it -v invista-ai-data:/app/data invista-ai-cli
 ```
 
+</details>
+
 #### Opção B: Usar Imagem do Docker Hub (Recomendado)
+
+<details>
+<summary>Clique aqui para ver como usar imagem do Docker Hub</summary>
 
 ```sh
 # Baixar a imagem oficial do Docker Hub
 docker pull pedrorcruzz/invista-ai-cli:v1.2
 
-# Montar e executar o container com nome
+# Montar e executar o container com nome (sem volume - dados ficam no container)
 docker run -it --name invista-ai-cli pedrorcruzz/invista-ai-cli:v1.2
+
+# Montar e executar o container com volume para persistir dados
+docker run -it --name invista-ai-cli -v invista-ai-data:/app/data pedrorcruzz/invista-ai-cli:v1.2
 ```
+
+</details>
 
 **💡 Diferença:**
 
 - **Opção A**: Você cria a imagem localmente com `docker build`
 - **Opção B**: Você baixa uma imagem já pronta do Docker Hub com `docker pull`
+
+#### 📦 Persistência de Dados com Volumes
+
+**⚠️ Importante:** Por padrão, os dados são salvos dentro do container. Se você remover o container, perderá todos os dados. Para persistir os dados, use volumes:
+
+**Sem Volume (Dados ficam no container):**
+
+```sh
+docker run -it --name invista-ai-cli pedrorcruzz/invista-ai-cli:v1.2
+```
+
+**Com Volume (Dados persistem mesmo removendo o container):**
+
+```sh
+# Criar volume (primeira vez)
+docker volume create invista-ai-data
+
+# Executar com volume
+docker run -it --name invista-ai-cli -v invista-ai-data:/app/data pedrorcruzz/invista-ai-cli:v1.2
+```
+
+**💡 Vantagens do Volume:**
+
+- Dados persistem mesmo se você remover o container
+- Pode usar o mesmo volume em diferentes containers
+- Backup mais fácil dos dados
+- Recuperação de dados em caso de problemas
+
+**📁 Dados Persistidos:**
+
+- `dados.json` (raiz do projeto) - Dados de investimentos
+- `data/produtos.json` - Dados do gestor de gastos
 
 #### Comandos Úteis
 
@@ -96,7 +164,7 @@ docker run -it --name invista-ai-cli pedrorcruzz/invista-ai-cli:v1.2
 
 **📦 Imagem disponível em:** [DOCKERHUB](https://hub.docker.com/repository/docker/pedrorcruzz/invista-ai-cli/general)
 
-**🔒 Segurança:** Os dados são salvos localmente na imagem.
+**🔒 Segurança:** Os dados são salvos localmente na imagem ou no volume Docker.
 
 ---
 
@@ -132,6 +200,9 @@ chmod +x invista-ai.sh
 
 Adicione a função abaixo ao seu arquivo ~/.config/fish/config.fish:
 
+<details>
+<summary>Clique aqui para ver a função Fish</summary>
+
 ```fish
 function invista-ai
     set prev_dir (pwd)
@@ -141,13 +212,20 @@ function invista-ai
 end
 ```
 
+</details>
+
 #### Zsh/Bash
 
 Adicione o alias abaixo ao seu ~/.zshrc ou ~/.bashrc:
 
+<details>
+<summary>Clique aqui para ver o alias Zsh/Bash</summary>
+
 ```bash
 alias invista-ai="cd ~/.dotfiles/scripts && ./invista-ai.sh && cd -" # ⚠️ TROQUE PELO DIRETÓRIO DO SEU SCRIPT
 ```
+
+</details>
 
 ### 4. Recarregue sua Configuração do Shell
 
@@ -155,21 +233,36 @@ Após adicionar a função ou alias, recarregue sua configuração:
 
 #### Fish
 
+<details>
+<summary>Clique aqui para ver como recarregar configuração Fish</summary>
+
 ```bash
 source ~/.config/fish/config.fish
 ```
 
+</details>
+
 #### Zsh
+
+<details>
+<summary>Clique aqui para ver como recarregar configuração Zsh</summary>
 
 ```bash
 source ~/.zshrc
 ```
 
+</details>
+
 #### Bash
+
+<details>
+<summary>Clique aqui para ver como recarregar configuração Bash</summary>
 
 ```bash
 source ~/.bashrc
 ```
+
+</details>
 
 Agora você pode rodar o InvistAI de qualquer diretório apenas digitando `invista-ai` no terminal.
 
@@ -216,7 +309,7 @@ Agora você pode rodar o InvistAI de qualquer diretório apenas digitando `invis
 ## 📝 Licença & Créditos
 
 - LICENÇA [MIT](https://github.com/pedrorcruzz/invista-ai/blob/develop/LICENSE)
-- Criado por [Pedro Rosa](https://github.com/pedrorcruzz)
+- Criado por [Pedro Rosa](https://www.linkedin.com/in/pedrorcruzz/)
 
 ---
 
