@@ -70,8 +70,8 @@ docker run -it invista-ai-cli
 
 ```sh
 # Baixar e executar a imagem oficial (o programa roda automaticamente)
-docker pull pedrorcruzz/invista-ai-cli:v1.1
-docker run -it pedrorcruzz/invista-ai-cli:v1.1
+docker pull pedrorcruzz/invista-ai-cli:v1.2
+docker run -it pedrorcruzz/invista-ai-cli:v1.2
 ```
 
 **💡 Dica:** O programa executa automaticamente quando você roda o container. Se quiser acessar o shell do container (para debug), use: `docker run -it invista-ai-cli sh`
