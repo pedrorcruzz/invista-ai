@@ -82,7 +82,7 @@ docker run -it pedrorcruzz/invista-ai-cli:v1.1
 docker exec -it invista-ai-cli /app/invista-ai-cli
 ```
 
-**📦 Imagem disponível em:** https://hub.docker.com/repository/docker/pedrorcruzz/invista-ai-cli/general
+**📦 Imagem disponível em:** [DOCKERHUB](https://hub.docker.com/repository/docker/pedrorcruzz/invista-ai-cli/general)
 
 **Nota:** O Docker inclui automaticamente todos os dados necessários (pasta `data` e arquivos `.json`) na imagem.
 
