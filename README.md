@@ -58,33 +58,45 @@ go build -o invista-ai
 
 ### 4. Usar com Docker
 
+#### Opção A: Build Local (Criar Imagem)
+
 ```sh
-# Build da imagem
+# Build da imagem localmente
 docker build --no-cache -t invista-ai-cli .
 
-# Executar o container (o programa roda automaticamente)
+# Executar o container
 docker run -it invista-ai-cli
 ```
 
-**Ou baixar a imagem pré-buildada:**
+#### Opção B: Usar Imagem do Docker Hub (Recomendado)
 
 ```sh
-# Baixar e executar a imagem oficial (o programa roda automaticamente)
+# Baixar a imagem oficial do Docker Hub
 docker pull pedrorcruzz/invista-ai-cli:v1.2
-docker run -it pedrorcruzz/invista-ai-cli:v1.2
+
+# Montar e executar o container com nome
+docker run -it --name invista-ai-cli pedrorcruzz/invista-ai-cli:v1.2
 ```
 
-**💡 Dica:** O programa executa automaticamente quando você roda o container. Se quiser acessar o shell do container (para debug), use: `docker run -it invista-ai-cli sh`
+**💡 Diferença:**
 
-**Para executar um container já rodando:**
+- **Opção A**: Você cria a imagem localmente com `docker build`
+- **Opção B**: Você baixa uma imagem já pronta do Docker Hub com `docker pull`
 
-```sh
-docker exec -it invista-ai-cli /app/invista-ai-cli
-```
+#### Comandos Úteis
+
+**💡 Dicas:**
+
+- O programa executa automaticamente quando você monta o container
+- Para acessar o shell do container (debug): `docker run -it pedrorcruzz/invista-ai-cli:v1.2 sh`
+- Para executar em container já rodando: `docker exec -it invista-ai-cli /app/invista-ai-cli`
+- Para ver containers ativos: `docker ps`
+- Para parar um container: `docker stop invista-ai-cli`
+- Para remover um container: `docker rm invista-ai-cli`
 
 **📦 Imagem disponível em:** [DOCKERHUB](https://hub.docker.com/repository/docker/pedrorcruzz/invista-ai-cli/general)
 
-**Nota:** O Docker inclui automaticamente todos os dados necessários (pasta `data` e arquivos `.json`) na imagem.
+**🔒 Segurança:** Os dados são salvos localmente na imagem.
 
 ---
 
