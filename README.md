@@ -103,10 +103,10 @@ docker run -it -v invista-ai-data:/app/data invista-ai-cli
 
 ```sh
 # Baixar a imagem oficial do Docker Hub
-docker pull pedrorcruzz/invista-ai-cli:v1.2
+docker pull pedrorcruzz/invista-ai-cli:v1.3
 
 # Montar e executar o container com nome (sem volume - dados ficam no container)
-docker run -it --name invista-ai-cli pedrorcruzz/invista-ai-cli:v1.2
+docker run -it --name invista-ai-cli pedrorcruzz/invista-ai-cli:v1.3
 
 # Montar e executar o container com volume para persistir dados
 docker run -it --name invista-ai-cli -v invista-ai-data:/app/data pedrorcruzz/invista-ai-cli:v1.2
@@ -126,7 +126,7 @@ docker run -it --name invista-ai-cli -v invista-ai-data:/app/data pedrorcruzz/in
 **Sem Volume (Dados ficam no container):**
 
 ```sh
-docker run -it --name invista-ai-cli pedrorcruzz/invista-ai-cli:v1.2
+docker run -it --name invista-ai-cli pedrorcruzz/invista-ai-cli:v1.3
 ```
 
 **Com Volume (Dados persistem mesmo removendo o container):**
@@ -136,7 +136,7 @@ docker run -it --name invista-ai-cli pedrorcruzz/invista-ai-cli:v1.2
 docker volume create invista-ai-data
 
 # Executar com volume
-docker run -it --name invista-ai-cli -v invista-ai-data:/app/data pedrorcruzz/invista-ai-cli:v1.2
+docker run -it --name invista-ai-cli -v invista-ai-data:/app/data pedrorcruzz/invista-ai-cli:v1.3
 ```
 
 **💡 Vantagens do Volume:**
@@ -156,7 +156,7 @@ docker run -it --name invista-ai-cli -v invista-ai-data:/app/data pedrorcruzz/in
 **💡 Dicas:**
 
 - O programa executa automaticamente quando você monta o container
-- Para acessar o shell do container (debug): `docker run -it pedrorcruzz/invista-ai-cli:v1.2 sh`
+- Para acessar o shell do container (debug): `docker run -it pedrorcruzz/invista-ai-cli:v1.3 sh`
 - Para executar em container já rodando: `docker exec -it invista-ai-cli /app/invista-ai-cli`
 - Para ver containers ativos: `docker ps`
 - Para parar um container: `docker stop invista-ai-cli`
