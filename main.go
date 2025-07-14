@@ -22,7 +22,6 @@ func main() {
 		opcao := scanner.Text()
 
 		if inMenuInicial && opcao == "6" {
-			fmt.Println("Saindo...")
 			internal.ClearTerminal()
 			return
 		}

@@ -325,6 +325,9 @@ Lucro Líquido RF: R$ %s
 	resumo += "[FIIs]\n"
 	resumo += fmt.Sprintf("Total Investido: R$ %s\n", FormatFloatBR(fiisTotalInvestido))
 	resumo += fmt.Sprintf("Carteira: R$ %s\n", FormatFloatBR(fiisCarteira))
+	// Calcular variacao do dia (carteira FIIs)
+	variacaoDia := fiisCarteira - fiisTotalInvestido
+	resumo += fmt.Sprintf("Variação (carteira FIIs): R$ %s\n", FormatFloatBR(variacaoDia))
 	// Linha de rendimento FIIs sozinha
 	linhaRendimento := fmt.Sprintf("[Rendimento FIIs: R$ %s]", FormatFloatBR(rendimentoFIIs))
 	resumo += linhaRendimento + "\n"
@@ -773,6 +776,9 @@ func MostrarResumoAno(dados Dados, ano string) {
 	fmt.Println("[FIIs]")
 	fmt.Printf("Total Investido: R$ %s\n", FormatFloatBR(fiisTotalInvestido))
 	fmt.Printf("Carteira: R$ %s\n", FormatFloatBR(fiisCarteira))
+	// Calcular variacao do ano (carteira FIIs)
+	variacaoAno := fiisCarteira - fiisTotalInvestido
+	fmt.Printf("Variação (carteira FIIs): R$ %s\n", FormatFloatBR(variacaoAno))
 	// Linha de rendimento FIIs sozinha
 	linhaRendimento := fmt.Sprintf("[Rendimento FIIs: R$ %s]", FormatFloatBR(rendimentoFIIs))
 	fmt.Println(linhaRendimento)

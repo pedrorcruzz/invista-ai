@@ -19,7 +19,8 @@ func PrintMenuPrincipalSozinho() {
 	fmt.Println("║ 2. Renda Fixa                                       ║")
 	fmt.Println("║ 3. FIIs                                             ║")
 	fmt.Println("║ 4. Gestor Inteligente de Gastos                     ║")
-	fmt.Println("║ 5. Voltar para o menu inicial                       ║")
+	fmt.Println("║ 5. Ajustar valor da carteira                        ║")
+	fmt.Println("║ 6. Voltar para o menu inicial                       ║")
 	fmt.Println("╚══════════════════════════════════════════════════════╝")
 }
 
@@ -332,7 +333,7 @@ func GerenciarFIIs(dados *Dados, scanner *bufio.Scanner) {
 		fmt.Println("╔══════════════════════════════════════════════════════╗")
 		fmt.Println("║                     FIIs                            ║")
 		fmt.Println("╟──────────────────────────────────────────────────────╢")
-		fmt.Printf("║ Valor total investido: R$ %s%*s║\n", FormatFloatBR(totalInvestido+ajuste), 44-len(FormatFloatBR(totalInvestido+ajuste)), "")
+		fmt.Printf("║ Carteira: R$ %s%*s║\n", FormatFloatBR(totalInvestido+ajuste), 44-len(FormatFloatBR(totalInvestido+ajuste)), "")
 		sinal := "+"
 		if ajuste < 0 {
 			sinal = "-"
@@ -343,7 +344,7 @@ func GerenciarFIIs(dados *Dados, scanner *bufio.Scanner) {
 		fmt.Println("║ 2. Gerenciar dividendos e vendas                    ║")
 		fmt.Println("║ 3. Ver DARF a pagar                                 ║")
 		fmt.Println("║ 4. Ver FIIs conhecidos                              ║")
-		fmt.Println("║ 5. Total investido                                  ║")
+		fmt.Println("║ 5. Ajustar valor da carteira                        ║")
 		fmt.Println("║ 6. Voltar ao menu principal                         ║")
 		fmt.Println("╚══════════════════════════════════════════════════════╝")
 
