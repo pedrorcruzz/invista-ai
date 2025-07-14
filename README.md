@@ -109,7 +109,7 @@ docker pull pedrorcruzz/invista-ai-cli:v1.3
 docker run -it --name invista-ai-cli pedrorcruzz/invista-ai-cli:v1.3
 
 # Montar e executar o container com volume para persistir dados
-docker run -it --name invista-ai-cli -v invista-ai-data:/app/data pedrorcruzz/invista-ai-cli:v1.2
+docker run -it --name invista-ai-cli -v invista-ai-data:/app/data pedrorcruzz/invista-ai-cli:v1.3
 ```
 
 </details>
