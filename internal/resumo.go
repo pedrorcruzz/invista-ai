@@ -459,9 +459,9 @@ func GetResumoMesAtualStr(dados Dados) string {
 							totalQtdOriginal += aporte.Quantidade + qtdVendidaAporte
 						}
 						if cotasVendidas > 0 {
-							fiisStr += fmt.Sprintf("    %s: %d cotas atuais | %d cotas vendidas | %d cotas (total) | R$ %s\n", fii.Codigo, totalQtd, cotasVendidas, totalQtdOriginal, FormatFloatBR(totalValor))
+							fiisStr += fmt.Sprintf("    %s: %d cotas atuais | %d cotas vendidas | %d cotas | R$ %s\n", fii.Codigo, totalQtd, cotasVendidas, totalQtdOriginal, FormatFloatBR(totalValor))
 						} else {
-							fiisStr += fmt.Sprintf("    %s: %d cotas (total) | R$ %s\n", fii.Codigo, totalQtdOriginal, FormatFloatBR(totalValor))
+							fiisStr += fmt.Sprintf("    %s: %d cotas | R$ %s\n", fii.Codigo, totalQtdOriginal, FormatFloatBR(totalValor))
 						}
 						for _, aporte := range fii.Aportes {
 							// Exibir data completa (dd/mm/aaaa)
@@ -603,9 +603,9 @@ func MostrarResumoAno(dados Dados, ano string) {
 					totalQtdOriginal += aporte.Quantidade + qtdVendidaAporte
 				}
 				if cotasVendidas > 0 {
-					fmt.Printf("    %s: %d cotas atuais | %d cotas vendidas | %d cotas (total) | R$ %s\n", fii.Codigo, totalQtd, cotasVendidas, totalQtdOriginal, FormatFloatBR(totalValor))
+					fmt.Printf("    %s: %d cotas atuais | %d cotas vendidas | %d cotas | R$ %s\n", fii.Codigo, totalQtd, cotasVendidas, totalQtdOriginal, FormatFloatBR(totalValor))
 				} else {
-					fmt.Printf("    %s: %d cotas (total) | R$ %s\n", fii.Codigo, totalQtdOriginal, FormatFloatBR(totalValor))
+					fmt.Printf("    %s: %d cotas | R$ %s\n", fii.Codigo, totalQtdOriginal, FormatFloatBR(totalValor))
 				}
 				for _, aporte := range fii.Aportes {
 					// Exibir data completa (dd/mm/aaaa)
