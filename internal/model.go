@@ -47,8 +47,9 @@ type Mes struct {
 type Ano map[string]Mes
 
 type Dados struct {
-	Anos           map[string]Ano `json:"anos"`
-	FIIsConhecidos []string       `json:"fiis_conhecidos"`
+	Anos            map[string]Ano `json:"anos"`
+	FIIsConhecidos  []string       `json:"fiis_conhecidos"`
+	ValorAjusteFIIs float64        `json:"valor_ajuste_fiis,omitempty"`
 }
 
 const Arquivo = "dados.json"

@@ -127,12 +127,20 @@ func GetResumoTotalAcumuladoStr(dados Dados) string {
 		}
 	}
 	// Totais - usar valores finais (bruto e líquido) da RF
-	totalAportadoBruto := ultimoBrutoFinal + aporteFIIsSoFar
-	totalAportadoLiquido := ultimoLiquidoFinal + aporteFIIsSoFar
-	// Novo: calcular aportes só de RF para o lucro bruto total
-	totalAportadoBrutoRF := aporteRFSoFar
+	// FIIs bruto: aportes + dividendos + lucro/prejuízo vendas + ajuste manual
+	totalDividendos := 0.0
+	totalLucroVendas := 0.0
+	for _, fii := range todosFIIs {
+		totalDividendos += fii.Dividendos
+		for _, venda := range fii.Vendas {
+			totalLucroVendas += venda.LucroVenda
+		}
+	}
+	fiisBruto := aporteFIIsSoFar + totalDividendos + totalLucroVendas + dados.ValorAjusteFIIs
+	totalAportadoBruto := ultimoBrutoFinal + fiisBruto
+	totalAportadoLiquido := ultimoLiquidoFinal + fiisBruto
 	// Lucro bruto total = valor final - total aportado bruto (sem considerar saídas no cálculo)
-	lucroBrutoTotal := ultimoBrutoFinal - totalAportadoBrutoRF
+	lucroBrutoTotal := ultimoBrutoFinal - totalAportadoBruto
 	// Corrigir: usar o acumulado dos lucros brutos dos meses válidos
 	lucroBrutoTotal = lucroBrutoTotalAcumulado
 
@@ -141,12 +149,21 @@ func GetResumoTotalAcumuladoStr(dados Dados) string {
 	percFIIsBruto := 0.0
 	if totalAportadoBruto > 0 {
 		percRFBruto = (ultimoBrutoFinal / totalAportadoBruto) * 100
-		percFIIsBruto = (aporteFIIsSoFar / totalAportadoBruto) * 100
+		percFIIsBruto = (fiisBruto / totalAportadoBruto) * 100
 	}
 
 	// Porcentagens e valores de RF e FIIs (líquido, saídas só afetam RF)
 	rfLiquido := ultimoLiquidoFinal
-	fiisLiquido := aporteFIIsSoFar // FIIs não tem saída
+	// FIIs líquido: aportes + dividendos + lucro/prejuízo vendas + ajuste manual
+	totalDividendos = 0.0
+	totalLucroVendas = 0.0
+	for _, fii := range todosFIIs {
+		totalDividendos += fii.Dividendos
+		for _, venda := range fii.Vendas {
+			totalLucroVendas += venda.LucroVenda
+		}
+	}
+	fiisLiquido := aporteFIIsSoFar + totalDividendos + totalLucroVendas + dados.ValorAjusteFIIs
 	percRFLiquido := 0.0
 	percFIIsLiquido := 0.0
 	if totalAportadoLiquido > 0 {
@@ -220,18 +237,68 @@ func GetResumoTotalAcumuladoStr(dados Dados) string {
 		alertaDARF += "   💡 Prazo: até o último dia do mês seguinte\n"
 	}
 
-	return fmt.Sprintf(`================== InvistAI ==================%s
+	// Cálculo do bloco [FIIs] global
+	fiisTotalInvestido := 0.0
+	fiisDividendos := 0.0
+	fiisLucroVendas := 0.0
+	for _, fii := range todosFIIs {
+		for _, aporte := range fii.Aportes {
+			if aporte.ValorTotalManual != nil {
+				fiisTotalInvestido += *aporte.ValorTotalManual
+			} else {
+				fiisTotalInvestido += aporte.ValorTotal
+			}
+		}
+		fiisDividendos += fii.Dividendos
+		for _, venda := range fii.Vendas {
+			fiisLucroVendas += venda.LucroVenda
+		}
+	}
+	fiisCarteira := fiisTotalInvestido + fiisDividendos + fiisLucroVendas + dados.ValorAjusteFIIs
+	rendimentoFIIs := fiisDividendos + fiisLucroVendas
+	if abs(rendimentoFIIs) < 0.005 {
+		rendimentoFIIs = 0.0
+	}
+	if abs(fiisTotalInvestido) < 0.005 {
+		fiisTotalInvestido = 0.0
+	}
+	if abs(fiisCarteira) < 0.005 {
+		fiisCarteira = 0.0
+	}
+
+	// Preparar detalhes dos FIIs fora da caixinha
+	fiisDetalhes = ""
+	if len(todosFIIs) > 0 {
+		fiisDetalhes = "\n[FIIs Detalhados]\n"
+		for codigo, fii := range todosFIIs {
+			totalQtd := 0
+			totalValor := 0.0
+			for _, aporte := range fii.Aportes {
+				totalQtd += aporte.Quantidade
+				if aporte.ValorTotalManual != nil {
+					totalValor += *aporte.ValorTotalManual
+				} else {
+					totalValor += aporte.ValorTotal
+				}
+			}
+			fiisDetalhes += fmt.Sprintf("  - %s: %d cotas (R$ %s)\n", codigo, totalQtd, FormatFloatBR(totalValor))
+		}
+	}
+
+	// Montar o resumo principal sem bug de formatação
+	var resumo string
+	resumo = fmt.Sprintf(`================== InvistAI ==================%s
 
 --- Total Investido ---
 
-[VALOR BRUTO (valor atual da carteira)]
+[VALOR BRUTO]
 Total valor bruto: R$ %s
   - Renda Fixa: %.2f%% (R$ %s)
   - FIIs: %.2f%% (R$ %s)
 
 --------------------
 
-[VALOR LÍQUIDO (após impostos)]
+[VALOR LÍQUIDO]
 Total valor líquido: R$ %s
   - Renda Fixa: %.2f%% (R$ %s)
   - FIIs: %.2f%% (R$ %s)
@@ -247,25 +314,74 @@ Lucro Líquido RF: R$ %s
 
 ---------------------------------------
 
-[FIIs]
-Lucro FIIs: R$ %s%s
+`,
+		alertaDARF,
+		FormatFloatBR(totalAportadoBruto), percRFBruto, FormatFloatBR(ultimoBrutoFinal), percFIIsBruto, FormatFloatBR(fiisBruto),
+		FormatFloatBR(totalAportadoLiquido), percRFLiquido, FormatFloatBR(rfLiquido), percFIIsLiquido, FormatFloatBR(fiisLiquido),
+		FormatFloatBR(ultimoBrutoFinal), FormatFloatBR(ultimoLiquidoFinal), FormatFloatBR(lucrosRetiradosTotal), FormatFloatBR(lucroBrutoTotal),
+		FormatFloatBR(lucroLiquidoAcumulado))
 
+	// [FIIs] bloco global
+	resumo += "[FIIs]\n"
+	resumo += fmt.Sprintf("Total Investido: R$ %s\n", FormatFloatBR(fiisTotalInvestido))
+	resumo += fmt.Sprintf("Carteira: R$ %s\n", FormatFloatBR(fiisCarteira))
+	// Linha de rendimento FIIs sozinha
+	linhaRendimento := fmt.Sprintf("[Rendimento FIIs: R$ %s]", FormatFloatBR(rendimentoFIIs))
+	resumo += linhaRendimento + "\n"
+	// Linha de resumo dos FIIs (ex: ' - VGIR11 (100%) | R$ 10,00')
+	fiisResumo := ""
+	if len(todosFIIs) > 0 && rendimentoFIIs > 0.0 {
+		for codigo, fii := range todosFIIs {
+			lucroFII := fii.Dividendos
+			for _, venda := range fii.Vendas {
+				lucroFII += venda.LucroVenda - venda.DARF
+			}
+			porcentagem := 0.0
+			if rendimentoFIIs > 0 {
+				porcentagem = (lucroFII / rendimentoFIIs) * 100
+			}
+			fiisResumo += fmt.Sprintf(" - %s (%.0f%%) | R$ %s\n", codigo, porcentagem, FormatFloatBR(lucroFII))
+		}
+	}
+	if fiisResumo != "" {
+		resumo += fiisResumo
+	}
+	// Adiciona uma linha em branco antes do bloco detalhado
+	resumo += "\n"
+	// [FIIs Detalhados] bloco global
+	fiisDetalhes = ""
+	if len(todosFIIs) > 0 {
+		fiisDetalhes = "[FIIs Detalhados]\n"
+		for codigo, fii := range todosFIIs {
+			totalQtd := 0
+			totalValor := 0.0
+			for _, aporte := range fii.Aportes {
+				totalQtd += aporte.Quantidade
+				if aporte.ValorTotalManual != nil {
+					totalValor += *aporte.ValorTotalManual
+				} else {
+					totalValor += aporte.ValorTotal
+				}
+			}
+			fiisDetalhes += fmt.Sprintf("  - %s: %d cotas (R$ %s)\n", codigo, totalQtd, FormatFloatBR(totalValor))
+		}
+	}
+	if fiisDetalhes != "" {
+		resumo += fiisDetalhes
+	}
+
+	resumo += fmt.Sprintf(`
 ---------------------------------------
 
 ╔════════════════════════════════════════════════════╗
-║  Lucro Total Bruto (RF + FIIs): R$ %s            ║
-║  Lucro Total Líquido (RF + FIIs): R$ %s          ║
+║  Lucro Total Bruto (RF + FIIs): R$ %s           ║
+║  Lucro Total Líquido (RF + FIIs): R$ %s           ║
 ╚════════════════════════════════════════════════════╝
 `,
-		alertaDARF,
-		FormatFloatBR(totalAportadoBruto), percRFBruto, FormatFloatBR(ultimoBrutoFinal), percFIIsBruto, FormatFloatBR(aporteFIIsSoFar),
-		FormatFloatBR(totalAportadoLiquido), percRFLiquido, FormatFloatBR(rfLiquido), percFIIsLiquido, FormatFloatBR(fiisLiquido),
-		FormatFloatBR(ultimoBrutoFinal), FormatFloatBR(ultimoLiquidoFinal), FormatFloatBR(lucrosRetiradosTotal), FormatFloatBR(lucroBrutoTotal),
-		FormatFloatBR(lucroLiquidoAcumulado),     // Lucro Líquido RF
-		FormatFloatBR(lucroLiquidoFIIsAcumulado), // Lucro FIIs
-		fiisDetalhes,
-		FormatFloatBR(lucroBrutoTotalAcumulado),      // Lucro Total Bruto
-		FormatFloatBR(lucroMesLiquidoTotalAcumulado)) // Lucro Total Líquido
+		FormatFloatBR(lucroBrutoTotalAcumulado),
+		FormatFloatBR(lucroMesLiquidoTotalAcumulado))
+
+	return resumo
 }
 
 func GetResumoMesAtualStr(dados Dados) string {
@@ -358,7 +474,12 @@ func GetResumoMesAtualStr(dados Dados) string {
 								}
 							}
 							quantidadeOriginal := aporte.Quantidade + qtdVendidaAporte
-							fiisStr += fmt.Sprintf("      Aporte (%s): | %d cotas | R$ %s\n", data, quantidadeOriginal, FormatFloatBR(aporte.ValorTotal))
+							fiisStr += fmt.Sprintf("      Aporte (%s): | %d cotas | R$ %s/cota | R$ %s\n",
+								data,
+								quantidadeOriginal,
+								FormatFloatBR(aporte.PrecoCota),
+								FormatFloatBR(aporte.ValorTotal),
+							)
 						}
 						for _, venda := range fii.Vendas {
 							msg := fmt.Sprintf("      Venda (%s): | %d cotas | Preço médio: R$ %s | Preço total da venda: R$ %s | Taxas: R$ %s",
@@ -497,7 +618,12 @@ func MostrarResumoAno(dados Dados, ano string) {
 						}
 					}
 					quantidadeOriginal := aporte.Quantidade + qtdVendidaAporte
-					fmt.Printf("      Aporte (%s): | %d cotas | R$ %s\n", data, quantidadeOriginal, FormatFloatBR(aporte.ValorTotal))
+					fmt.Printf("      Aporte (%s): | %d cotas | R$ %s/cota | R$ %s\n",
+						data,
+						quantidadeOriginal,
+						FormatFloatBR(aporte.PrecoCota),
+						FormatFloatBR(aporte.ValorTotal),
+					)
 				}
 				for _, venda := range fii.Vendas {
 					msg := fmt.Sprintf("      Venda (%s): | %d cotas | Preço médio: R$ %s | Preço total da venda: R$ %s | Taxas: R$ %s",
@@ -555,24 +681,8 @@ func MostrarResumoAno(dados Dados, ano string) {
 	// Usar o acumulado correto dos lucros líquidos (não sobrescrever)
 	// lucroLiquidoTotal := valorLiquidoFinal - (aporteRFSoFar - saidaSoFar)
 	lucroLiquidoTotal := lucroLiquidoAcumulado
-	lucroLiquidoFIIsTotal := lucroLiquidoFIIsAcumulado
 
 	// Calcular porcentagens
-	percRFBruto := 0.0
-	percFIIsBruto := 0.0
-	if totalAportadoBruto > 0 {
-		percRFBruto = (valorBrutoFinal / totalAportadoBruto) * 100
-		percFIIsBruto = (aporteFIIsSoFar / totalAportadoBruto) * 100
-	}
-
-	rfLiquido := valorLiquidoFinal
-	fiisLiquido := aporteFIIsSoFar
-	percRFLiquido := 0.0
-	percFIIsLiquido := 0.0
-	if totalAportadoLiquido > 0 {
-		percRFLiquido = (rfLiquido / totalAportadoLiquido) * 100
-		percFIIsLiquido = (fiisLiquido / totalAportadoLiquido) * 100
-	}
 
 	// Preparar detalhes dos FIIs com porcentagem do lucro
 	fiisDetalhes := ""
@@ -581,7 +691,6 @@ func MostrarResumoAno(dados Dados, ano string) {
 		for codigo, fii := range fiisAno {
 			totalQtd := 0
 			totalValor := 0.0
-			lucroFII := fii.Dividendos
 			for _, aporte := range fii.Aportes {
 				totalQtd += aporte.Quantidade
 				if aporte.ValorTotalManual != nil {
@@ -590,19 +699,33 @@ func MostrarResumoAno(dados Dados, ano string) {
 					totalValor += aporte.ValorTotal
 				}
 			}
-			// Adicionar lucro das vendas
-			for _, venda := range fii.Vendas {
-				lucroFII += venda.LucroVenda - venda.DARF
-			}
-
-			// Calcular porcentagem do lucro total
-			porcentagem := 0.0
-			if lucroLiquidoFIIsTotal > 0 {
-				porcentagem = (lucroFII / lucroLiquidoFIIsTotal) * 100
-			}
-
-			fiisDetalhes += fmt.Sprintf("  %s (%.1f%%): %d cotas (R$ %s)\n", codigo, porcentagem, totalQtd, FormatFloatBR(totalValor))
+			// Exibir apenas: - CÓDIGO: N cotas (R$ X,XX)
+			fiisDetalhes += fmt.Sprintf("  - %s: %d cotas (R$ %s)\n", codigo, totalQtd, FormatFloatBR(totalValor))
 		}
+	}
+
+	// Cálculo do bloco [FIIs] do ANO (igual ao global, mas só com FIIs do ano)
+	fiisTotalInvestido := 0.0
+	fiisDividendos := 0.0
+	fiisLucroVendas := 0.0
+	for _, fii := range fiisAno {
+		for _, aporte := range fii.Aportes {
+			if aporte.ValorTotalManual != nil {
+				fiisTotalInvestido += *aporte.ValorTotalManual
+			} else {
+				fiisTotalInvestido += aporte.ValorTotal
+			}
+		}
+		fiisDividendos += fii.Dividendos
+		for _, venda := range fii.Vendas {
+			fiisLucroVendas += venda.LucroVenda
+		}
+	}
+	// O ajuste manual é global, mas entra no cálculo da carteira do ano
+	fiisCarteira := fiisTotalInvestido + fiisDividendos + fiisLucroVendas + dados.ValorAjusteFIIs
+	rendimentoFIIs := fiisDividendos + fiisLucroVendas
+	if rendimentoFIIs < 0.005 && rendimentoFIIs > -0.005 {
+		rendimentoFIIs = 0.0
 	}
 
 	fmt.Println()
@@ -612,15 +735,29 @@ func MostrarResumoAno(dados Dados, ano string) {
 	fmt.Println()
 	fmt.Println("[VALOR BRUTO (valor atual da carteira no ano)]")
 	fmt.Printf("Total valor bruto: R$ %s\n", FormatFloatBR(totalAportadoBruto))
-	fmt.Printf("  - Renda Fixa: %.2f%% (R$ %s)\n", percRFBruto, FormatFloatBR(valorBrutoFinal))
-	fmt.Printf("  - FIIs: %.2f%% (R$ %s)\n", percFIIsBruto, FormatFloatBR(aporteFIIsSoFar))
+	totalBrutoAno := valorBrutoFinal + fiisCarteira
+	percRFBrutoAno := 0.0
+	percFIIsBrutoAno := 0.0
+	if totalBrutoAno > 0 {
+		percRFBrutoAno = (valorBrutoFinal / totalBrutoAno) * 100
+		percFIIsBrutoAno = (fiisCarteira / totalBrutoAno) * 100
+	}
+	fmt.Printf("  - Renda Fixa: %.2f%% (R$ %s)\n", percRFBrutoAno, FormatFloatBR(valorBrutoFinal))
+	fmt.Printf("  - FIIs: %.2f%% (R$ %s)\n", percFIIsBrutoAno, FormatFloatBR(fiisCarteira))
 	fmt.Println()
 	fmt.Println("--------------------")
 	fmt.Println()
-	fmt.Println("[VALOR LÍQUIDO (após impostos no ano)]")
+	fmt.Println("[VALOR LÍQUIDO]")
 	fmt.Printf("Total valor líquido: R$ %s\n", FormatFloatBR(totalAportadoLiquido))
-	fmt.Printf("  - Renda Fixa: %.2f%% (R$ %s)\n", percRFLiquido, FormatFloatBR(rfLiquido))
-	fmt.Printf("  - FIIs: %.2f%% (R$ %s)\n", percFIIsLiquido, FormatFloatBR(fiisLiquido))
+	totalLiquidoAno := valorLiquidoFinal + fiisCarteira
+	percRFLiquidoAno := 0.0
+	percFIIsLiquidoAno := 0.0
+	if totalLiquidoAno > 0 {
+		percRFLiquidoAno = (valorLiquidoFinal / totalLiquidoAno) * 100
+		percFIIsLiquidoAno = (fiisCarteira / totalLiquidoAno) * 100
+	}
+	fmt.Printf("  - Renda Fixa: %.2f%% (R$ %s)\n", percRFLiquidoAno, FormatFloatBR(valorLiquidoFinal))
+	fmt.Printf("  - FIIs: %.2f%% (R$ %s)\n", percFIIsLiquidoAno, FormatFloatBR(fiisCarteira))
 	fmt.Println()
 	fmt.Println("---------------------------------------")
 	fmt.Println()
@@ -634,7 +771,32 @@ func MostrarResumoAno(dados Dados, ano string) {
 	fmt.Println("---------------------------------------")
 	fmt.Println()
 	fmt.Println("[FIIs]")
-	fmt.Printf("Lucro FIIs: R$ %s%s\n", FormatFloatBR(lucroLiquidoFIIsTotal), fiisDetalhes)
+	fmt.Printf("Total Investido: R$ %s\n", FormatFloatBR(fiisTotalInvestido))
+	fmt.Printf("Carteira: R$ %s\n", FormatFloatBR(fiisCarteira))
+	// Linha de rendimento FIIs sozinha
+	linhaRendimento := fmt.Sprintf("[Rendimento FIIs: R$ %s]", FormatFloatBR(rendimentoFIIs))
+	fmt.Println(linhaRendimento)
+	// Linha de resumo dos FIIs (ex: ' - VGIR11 (100%) | R$ 10,00')
+	fiisResumo := ""
+	if len(fiisAno) > 0 && rendimentoFIIs > 0.0 {
+		for codigo, fii := range fiisAno {
+			lucroFII := fii.Dividendos
+			for _, venda := range fii.Vendas {
+				lucroFII += venda.LucroVenda - venda.DARF
+			}
+			porcentagem := 0.0
+			if rendimentoFIIs > 0 {
+				porcentagem = (lucroFII / rendimentoFIIs) * 100
+			}
+			fiisResumo += fmt.Sprintf(" - %s (%.0f%%) | R$ %s\n", codigo, porcentagem, FormatFloatBR(lucroFII))
+		}
+	}
+	if fiisResumo != "" {
+		fmt.Print(fiisResumo)
+	}
+	if fiisDetalhes != "" {
+		fmt.Print(fiisDetalhes)
+	}
 	fmt.Println()
 	fmt.Println("---------------------------------------")
 	fmt.Println()
@@ -642,4 +804,5 @@ func MostrarResumoAno(dados Dados, ano string) {
 	fmt.Printf("║  Lucro Total Bruto (RF + FIIs): R$ %s           ║\n", FormatFloatBR(lucroBrutoTotalAcumulado))
 	fmt.Printf("║  Lucro Total Líquido (RF + FIIs): R$ %s           ║\n", FormatFloatBR(lucroMesLiquidoTotalAcumulado))
 	fmt.Println("╚════════════════════════════════════════════════════╝")
+	return
 }

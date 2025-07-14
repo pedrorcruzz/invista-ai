@@ -311,35 +311,40 @@ func GerenciarRendaFixa(dados *Dados, scanner *bufio.Scanner) {
 
 func GerenciarFIIs(dados *Dados, scanner *bufio.Scanner) {
 	for {
-		ClearTerminal()
-		fmt.Println("╔══════════════════════════════════════════════════════╗")
-		fmt.Println("║                     FIIs                            ║")
-		fmt.Println("╟──────────────────────────────────────────────────────╢")
-		// Checar se há DARF a pagar
-		totalDARF := 0.0
-		maiorPrazo := ""
-		for ano, mesesMap := range dados.Anos {
-			for mes, m := range mesesMap {
-				darfMes := CalcularDARFTotal(m.FIIs)
-				totalDARF += darfMes
-				if darfMes > 0 {
-					ultimoDia, mesPagamento, anoPagamento := CalcularPrazoDARF(mes, ano)
-					prazo := fmt.Sprintf("%02d/%02d/%04d", ultimoDia, mesPagamento, anoPagamento)
-					if prazo > maiorPrazo {
-						maiorPrazo = prazo
+		// Calcular o valor total investido em FIIs (soma de todos os meses/anos)
+		totalInvestido := 0.0
+		for _, meses := range dados.Anos {
+			for _, mes := range meses {
+				for _, fii := range mes.FIIs {
+					for _, aporte := range fii.Aportes {
+						if aporte.ValorTotalManual != nil {
+							totalInvestido += *aporte.ValorTotalManual
+						} else {
+							totalInvestido += aporte.ValorTotal
+						}
 					}
 				}
 			}
 		}
-		if totalDARF > 0 {
-			fmt.Printf("║ ⚠️ DARF a pagar: R$ %s | Prazo (%s)%*s║\n", FormatFloatBR(totalDARF), maiorPrazo, 37-len(FormatFloatBR(totalDARF))-len(maiorPrazo), "")
+		ajuste := dados.ValorAjusteFIIs
+
+		ClearTerminal()
+		fmt.Println("╔══════════════════════════════════════════════════════╗")
+		fmt.Println("║                     FIIs                            ║")
+		fmt.Println("╟──────────────────────────────────────────────────────╢")
+		fmt.Printf("║ Valor total investido: R$ %s%*s║\n", FormatFloatBR(totalInvestido+ajuste), 44-len(FormatFloatBR(totalInvestido+ajuste)), "")
+		sinal := "+"
+		if ajuste < 0 {
+			sinal = "-"
 		}
+		fmt.Printf("║ Lucro/Prejuízo: R$ %s%s%*s║\n", sinal, FormatFloatBR(abs(ajuste)), 49-len(FormatFloatBR(abs(ajuste)))-1, "")
 		fmt.Println("╠══════════════════════════════════════════════════════╣")
 		fmt.Println("║ 1. Adicionar/editar FIIs do mês                     ║")
 		fmt.Println("║ 2. Gerenciar dividendos e vendas                    ║")
 		fmt.Println("║ 3. Ver DARF a pagar                                 ║")
 		fmt.Println("║ 4. Ver FIIs conhecidos                              ║")
-		fmt.Println("║ 5. Voltar ao menu principal                         ║")
+		fmt.Println("║ 5. Total investido                                  ║")
+		fmt.Println("║ 6. Voltar ao menu principal                         ║")
 		fmt.Println("╚══════════════════════════════════════════════════════╝")
 
 		opcao := InputBox("Escolha uma opção:", scanner)
@@ -353,6 +358,8 @@ func GerenciarFIIs(dados *Dados, scanner *bufio.Scanner) {
 		case "4":
 			MostrarFIIsConhecidos(dados, scanner)
 		case "5":
+			MostrarEEditarTotalInvestidoFIIs(dados, scanner)
+		case "6":
 			return
 		default:
 			fmt.Println("Opção inválida.")
@@ -1522,4 +1529,98 @@ func RemoverVendaCotas(m *Mes, scanner *bufio.Scanner) {
 		fmt.Println("Operação cancelada.")
 	}
 	Pause(2000)
+}
+
+// Função para mostrar e editar o total investido em FIIs
+func MostrarEEditarTotalInvestidoFIIs(dados *Dados, scanner *bufio.Scanner) {
+	// Calcular o valor total investido em FIIs (soma de todos os meses/anos)
+	totalInvestido := 0.0
+	for _, meses := range dados.Anos {
+		for _, mes := range meses {
+			for _, fii := range mes.FIIs {
+				for _, aporte := range fii.Aportes {
+					if aporte.ValorTotalManual != nil {
+						totalInvestido += *aporte.ValorTotalManual
+					} else {
+						totalInvestido += aporte.ValorTotal
+					}
+				}
+			}
+		}
+	}
+	ajuste := dados.ValorAjusteFIIs
+
+	for {
+		caixa := []string{
+			fmt.Sprintf("Valor total investido: R$ %s", FormatFloatBR(totalInvestido+ajuste)),
+		}
+		sinal := "+"
+		if ajuste < 0 {
+			sinal = "-"
+		}
+		caixa = append(caixa, fmt.Sprintf("Lucro/Prejuízo: R$ %s%s", sinal, FormatFloatBR(abs(ajuste))))
+		PrintCaixa(caixa)
+		fmt.Println("1 - Lucro")
+		fmt.Println("2 - Prejuízo")
+		fmt.Println("3 - Manual")
+		fmt.Println("4 - Voltar")
+		opcao := InputBox("Escolha uma opção:", scanner)
+		switch opcao {
+		case "1":
+			valorStr := InputBox("Digite o valor do lucro:", scanner)
+			valor, err := ParseFloatBR(valorStr)
+			if err != nil || valor < 0 {
+				PrintCaixa([]string{"Valor inválido!"})
+				Pause(2000)
+				continue
+			}
+			dados.ValorAjusteFIIs += valor
+			SalvarDados(*dados)
+			ajuste = dados.ValorAjusteFIIs
+			PrintCaixa([]string{fmt.Sprintf("Novo valor total investido (com lucro): R$ %s", FormatFloatBR(totalInvestido+ajuste))})
+			Pause(2000)
+		case "2":
+			valorStr := InputBox("Digite o valor do prejuízo:", scanner)
+			valor, err := ParseFloatBR(valorStr)
+			if err != nil || valor < 0 {
+				PrintCaixa([]string{"Valor inválido!"})
+				Pause(2000)
+				continue
+			}
+			dados.ValorAjusteFIIs -= valor
+			if (totalInvestido + dados.ValorAjusteFIIs) < 0 {
+				dados.ValorAjusteFIIs = -totalInvestido
+			}
+			SalvarDados(*dados)
+			ajuste = dados.ValorAjusteFIIs
+			PrintCaixa([]string{fmt.Sprintf("Novo valor total investido (com prejuízo): R$ %s", FormatFloatBR(totalInvestido+ajuste))})
+			Pause(2000)
+		case "3":
+			valorStr := InputBox("Digite o valor manual:", scanner)
+			valor, err := ParseFloatBR(valorStr)
+			if err != nil || valor < 0 {
+				PrintCaixa([]string{"Valor inválido!"})
+				Pause(2000)
+				continue
+			}
+			dados.ValorAjusteFIIs = valor - totalInvestido
+			SalvarDados(*dados)
+			ajuste = dados.ValorAjusteFIIs
+			PrintCaixa([]string{fmt.Sprintf("Novo valor total investido (manual): R$ %s", FormatFloatBR(totalInvestido+ajuste))})
+			Pause(2000)
+		case "4":
+			return
+		default:
+			PrintCaixa([]string{"Opção inválida."})
+			Pause(2000)
+		}
+	}
+}
+
+// Função auxiliar para valor absoluto
+func abs(f float64) float64 {
+	if f < 0 {
+		return -f
+	}
+	return f
 }
