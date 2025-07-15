@@ -333,12 +333,12 @@ func GerenciarFIIs(dados *Dados, scanner *bufio.Scanner) {
 		fmt.Println("╔══════════════════════════════════════════════════════╗")
 		fmt.Println("║                     FIIs                            ║")
 		fmt.Println("╟──────────────────────────────────────────────────────╢")
-		fmt.Printf("║ Carteira: R$ %s%*s║\n", FormatFloatBR(totalInvestido+ajuste), 44-len(FormatFloatBR(totalInvestido+ajuste)), "")
+		fmt.Printf("║ %-54s║\n", fmt.Sprintf("Carteira: R$ %s", FormatFloatBR(totalInvestido+ajuste)))
 		sinal := "+"
 		if ajuste < 0 {
 			sinal = "-"
 		}
-		fmt.Printf("║ Lucro/Prejuízo: R$ %s%s%*s║\n", sinal, FormatFloatBR(abs(ajuste)), 49-len(FormatFloatBR(abs(ajuste)))-1, "")
+		fmt.Printf("║ %-54s║\n", fmt.Sprintf("Lucro/Prejuízo: R$ %s%s", sinal, FormatFloatBR(abs(ajuste))))
 		fmt.Println("╠══════════════════════════════════════════════════════╣")
 		fmt.Println("║ 1. Adicionar/editar FIIs do mês                     ║")
 		fmt.Println("║ 2. Gerenciar dividendos e vendas                    ║")
