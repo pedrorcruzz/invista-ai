@@ -409,17 +409,17 @@ func GetResumoMesAtualStr(dados Dados) string {
 				resumo := fmt.Sprintf(`%s
   ⚠️ Mês atual em andamento — valores podem parecer distorcidos (lucro líquido ainda parcial)
 ---------------------------------------
-  %-18s R$ %s
-  %-18s R$ %s
-  %-18s R$ %s
-  %-18s R$ %s
-  %-18s R$ %s
-  %-18s R$ %s
-  %-18s R$ %s
-  %-18s R$ %s
-  %-18s R$ %s
-  %-18s R$ %s
-  %-18s R$ %s
+  %-22s R$ %s
+  %-22s R$ %s
+  %-22s R$ %s
+  %-22s R$ %s
+  %-22s R$ %s
+  %-22s R$ %s
+  %-22s R$ %s
+  %-22s R$ %s
+  %-22s R$ %s
+  %-22s R$ %s
+  %-22s R$ %s
 ---------------------------------------`,
 					titulo,
 					"Aporte Total:", FormatFloatBR(m.AporteRF+aporteFIIs),
@@ -564,17 +564,17 @@ func MostrarResumoAno(dados Dados, ano string) {
 		}
 		fmt.Println("---------------------------------------")
 		aporteFIIs := CalcularValorTotalFIIs(m.FIIs)
-		fmt.Printf("  %-18s R$ %s\n", "Aporte Total:", FormatFloatBR(m.AporteRF+aporteFIIs))
-		fmt.Printf("  %-18s R$ %s\n", "Aporte RF:", FormatFloatBR(m.AporteRF))
-		fmt.Printf("  %-18s R$ %s\n", "Aporte FIIs:", FormatFloatBR(aporteFIIs))
-		fmt.Printf("  %-18s R$ %s\n", "Saída:", FormatFloatBR(m.Saida))
-		fmt.Printf("  %-18s R$ %s\n", "Lucro Retirado:", FormatFloatBR(m.LucroRetirado))
-		fmt.Printf("  %-18s R$ %s\n", "Bruto RF:", FormatFloatBR(m.ValorBrutoRF))
-		fmt.Printf("  %-18s R$ %s\n", "Líquido RF:", FormatFloatBR(m.ValorLiquidoRF))
-		fmt.Printf("  %-18s R$ %s\n", "Lucro Mês Bruto RF:", FormatFloatBR(lucroMesBruto))
-		fmt.Printf("  %-18s R$ %s\n", "Lucro Líquido RF:", FormatFloatBR(lucroMesLiquidoRF))
-		fmt.Printf("  %-18s R$ %s\n", "Lucro FIIs:", FormatFloatBR(lucroLiquidoFIIs))
-		fmt.Printf("  %-18s R$ %s\n", "Lucro Mês Líquido:", FormatFloatBR(lucroMesLiquidoTotal))
+		fmt.Printf("  %-22s R$ %s\n", "Aporte Total:", FormatFloatBR(m.AporteRF+aporteFIIs))
+		fmt.Printf("  %-22s R$ %s\n", "Aporte RF:", FormatFloatBR(m.AporteRF))
+		fmt.Printf("  %-22s R$ %s\n", "Aporte FIIs:", FormatFloatBR(aporteFIIs))
+		fmt.Printf("  %-22s R$ %s\n", "Saída:", FormatFloatBR(m.Saida))
+		fmt.Printf("  %-22s R$ %s\n", "Lucro Retirado:", FormatFloatBR(m.LucroRetirado))
+		fmt.Printf("  %-22s R$ %s\n", "Bruto RF:", FormatFloatBR(m.ValorBrutoRF))
+		fmt.Printf("  %-22s R$ %s\n", "Líquido RF:", FormatFloatBR(m.ValorLiquidoRF))
+		fmt.Printf("  %-22s R$ %s\n", "Lucro Mês Bruto RF:", FormatFloatBR(lucroMesBruto))
+		fmt.Printf("  %-22s R$ %s\n", "Lucro Líquido RF:", FormatFloatBR(lucroMesLiquidoRF))
+		fmt.Printf("  %-22s R$ %s\n", "Lucro FIIs:", FormatFloatBR(lucroLiquidoFIIs))
+		fmt.Printf("  %-22s R$ %s\n", "Lucro Mês Líquido:", FormatFloatBR(lucroMesLiquidoTotal))
 
 		// Mostrar detalhes dos FIIs do mês se houver
 		if len(m.FIIs) > 0 {
