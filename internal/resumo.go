@@ -281,7 +281,8 @@ func GetResumoTotalAcumuladoStr(dados Dados) string {
 					totalValor += aporte.ValorTotal
 				}
 			}
-			fiisDetalhes += fmt.Sprintf("  - %s: %d cotas (R$ %s)\n", codigo, totalQtd, FormatFloatBR(totalValor))
+			precoMedio := CalcularPrecoMedioFII(fii)
+			fiisDetalhes += fmt.Sprintf("  - %s: %d cotas (R$ %s) | Preço médio: R$ %s\n", codigo, totalQtd, FormatFloatBR(totalValor), FormatFloatBR(precoMedio))
 		}
 	}
 

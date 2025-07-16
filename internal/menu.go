@@ -20,7 +20,8 @@ func PrintMenuPrincipalSozinho() {
 	fmt.Println("║ 3. FIIs                                             ║")
 	fmt.Println("║ 4. Gestor Inteligente de Gastos                     ║")
 	fmt.Println("║ 5. Ajustar valor da carteira                        ║")
-	fmt.Println("║ 6. Voltar para o menu inicial                       ║")
+	fmt.Println("║ 6. Ajuste Preço Médio                               ║")
+	fmt.Println("║ 7. Voltar ao menu principal                         ║")
 	fmt.Println("╚══════════════════════════════════════════════════════╝")
 }
 
@@ -345,7 +346,8 @@ func GerenciarFIIs(dados *Dados, scanner *bufio.Scanner) {
 		fmt.Println("║ 3. Ver DARF a pagar                                 ║")
 		fmt.Println("║ 4. Ver FIIs conhecidos                              ║")
 		fmt.Println("║ 5. Ajustar valor da carteira                        ║")
-		fmt.Println("║ 6. Voltar ao menu principal                         ║")
+		fmt.Println("║ 6. Ajuste Preço Médio                               ║")
+		fmt.Println("║ 7. Voltar ao menu principal                         ║")
 		fmt.Println("╚══════════════════════════════════════════════════════╝")
 
 		opcao := InputBox("Escolha uma opção:", scanner)
@@ -361,6 +363,8 @@ func GerenciarFIIs(dados *Dados, scanner *bufio.Scanner) {
 		case "5":
 			MostrarEEditarTotalInvestidoFIIs(dados, scanner)
 		case "6":
+			AjustarPrecoMedioFIIs(dados, scanner)
+		case "7":
 			return
 		default:
 			fmt.Println("Opção inválida.")
@@ -901,6 +905,7 @@ func MostrarFIIsConhecidos(dados *Dados, scanner *bufio.Scanner) {
 		fmt.Println("║ 1. Ver lista de FIIs conhecidos                     ║")
 		fmt.Println("║ 2. Remover FII conhecido                           ║")
 		fmt.Println("║ 3. Voltar                                          ║")
+		fmt.Println("║ 4. Ajuste Preço Médio                               ║")
 		fmt.Println("╚══════════════════════════════════════════════════════╝")
 
 		opcao := InputBox("Escolha uma opção:", scanner)
@@ -911,6 +916,8 @@ func MostrarFIIsConhecidos(dados *Dados, scanner *bufio.Scanner) {
 			RemoverFIIConhecido(dados, scanner)
 		case "3":
 			return
+		case "4":
+			AjustarPrecoMedioFIIs(dados, scanner)
 		default:
 			fmt.Println("Opção inválida.")
 			Pause(2000)
@@ -1170,7 +1177,8 @@ func RegistrarVendaCotas(m *Mes, scanner *bufio.Scanner) {
 
 	// Calcular valores
 	valorTotalVenda := float64(qtd) * precoVenda
-	custoTotal := float64(qtd) * aporte.PrecoCota
+	precoMedioGlobal := CalcularPrecoMedioFII(*fii)
+	custoTotal := float64(qtd) * precoMedioGlobal
 	lucro := (valorTotalVenda - taxas) - custoTotal
 	darf := 0.0
 	if lucro > 0 {
@@ -1200,7 +1208,7 @@ func RegistrarVendaCotas(m *Mes, scanner *bufio.Scanner) {
 	fmt.Printf("Quantidade vendida: %d cotas\n", qtd)
 	fmt.Printf("Preço de venda: R$ %.2f\n", precoVenda)
 	fmt.Printf("Valor total da venda: R$ %.2f\n", valorTotalVenda)
-	fmt.Printf("Preço médio de compra: R$ %.2f\n", aporte.PrecoCota)
+	fmt.Printf("Preço médio de compra (global): R$ %.2f\n", precoMedioGlobal)
 	fmt.Printf("Custo total de compra: R$ %.2f\n", custoTotal)
 	fmt.Printf("Taxas pagas: R$ %.2f\n", taxas)
 	fmt.Printf("Lucro líquido: R$ %.2f\n", lucro)
@@ -1624,4 +1632,108 @@ func abs(f float64) float64 {
 		return -f
 	}
 	return f
+}
+
+// Função para ajuste de preço médio dos FIIs
+func AjustarPrecoMedioFIIs(dados *Dados, scanner *bufio.Scanner) {
+	for {
+		ClearTerminal()
+		fmt.Println("╔══════════════════════════════════════════════════════╗")
+		fmt.Println("║              AJUSTE PREÇO MÉDIO FII                 ║")
+		fmt.Println("╠══════════════════════════════════════════════════════╣")
+		fmt.Println("║ 1. Automático (padrão do sistema)                   ║")
+		fmt.Println("║ 2. Manual (definir preço médio inicial)             ║")
+		fmt.Println("║ 3. Voltar                                          ║")
+		fmt.Println("╚══════════════════════════════════════════════════════╝")
+
+		opcao := InputBox("Escolha uma opção:", scanner)
+		switch opcao {
+		case "1":
+			// Remover qualquer ajuste manual global
+			if dados.ValorAjusteFIIs != 0 {
+				dados.ValorAjusteFIIs = 0
+				fmt.Println("Ajuste manual removido. Sistema volta ao cálculo automático.")
+				Pause(2000)
+			}
+			return
+		case "2":
+			// Listar FIIs disponíveis
+			fiisUnicos := make(map[string]*FII)
+			for _, ano := range dados.Anos {
+				for _, mes := range ano {
+					for i := range mes.FIIs {
+						codigo := mes.FIIs[i].Codigo
+						if _, existe := fiisUnicos[codigo]; !existe {
+							fiisUnicos[codigo] = &mes.FIIs[i]
+						}
+					}
+				}
+			}
+			if len(fiisUnicos) == 0 {
+				fmt.Println("Nenhum FII disponível para ajuste.")
+				Pause(2000)
+				continue
+			}
+			// Exibir lista em uma caixinha
+			codigos := make([]string, 0, len(fiisUnicos))
+			for codigo := range fiisUnicos {
+				codigos = append(codigos, codigo)
+			}
+			sort.Strings(codigos)
+			caixa := []string{"FIIs disponíveis:"}
+			for i, codigo := range codigos {
+				precoMedio := CalcularPrecoMedioFII(*fiisUnicos[codigo])
+				caixa = append(caixa, fmt.Sprintf("%d - %s (Preço Médio: R$ %.2f)", i+1, codigo, precoMedio))
+			}
+			PrintCaixa(caixa)
+			input := InputBox("Digite o número ou código do FII para ajustar:", scanner)
+			input = strings.TrimSpace(input)
+			var fiiPtr *FII
+			if idx, err := strconv.Atoi(input); err == nil && idx >= 1 && idx <= len(codigos) {
+				fiiPtr = fiisUnicos[codigos[idx-1]]
+			} else {
+				codigo := strings.ToUpper(input)
+				if ptr, ok := fiisUnicos[codigo]; ok {
+					fiiPtr = ptr
+				}
+			}
+			if fiiPtr == nil {
+				fmt.Println("FII não encontrado.")
+				Pause(2000)
+				continue
+			}
+			precoStr := InputBox("Digite o preço médio desejado:", scanner)
+			precoStr = strings.ReplaceAll(precoStr, ",", ".")
+			preco, err := strconv.ParseFloat(precoStr, 64)
+			if err != nil || preco <= 0 {
+				fmt.Println("Preço inválido.")
+				Pause(2000)
+				continue
+			}
+			// Calcular total de cotas
+			totalCotas := 0
+			for _, ap := range fiiPtr.Aportes {
+				totalCotas += ap.Quantidade
+			}
+			if totalCotas == 0 {
+				fmt.Println("FII sem cotas para ajustar.")
+				Pause(2000)
+				continue
+			}
+			// Ajustar valor do primeiro aporte para refletir o novo preço médio
+			if len(fiiPtr.Aportes) > 0 {
+				valorManual := preco * float64(totalCotas)
+				fiiPtr.Aportes[0].ValorTotalManual = &valorManual
+				fiiPtr.Aportes[0].ValorTotal = valorManual
+				fmt.Printf("Preço médio ajustado para R$ %.2f em %s.\n", preco, fiiPtr.Codigo)
+				Pause(2000)
+			}
+			return
+		case "3":
+			return
+		default:
+			fmt.Println("Opção inválida.")
+			Pause(2000)
+		}
+	}
 }
