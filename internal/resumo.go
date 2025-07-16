@@ -198,7 +198,7 @@ func GetResumoTotalAcumuladoStr(dados Dados) string {
 				porcentagem = (lucroFII / lucroLiquidoFIIsAcumulado) * 100
 			}
 
-			fiisDetalhes += fmt.Sprintf("  - %s (%.1f%%): %d cotas (R$ %s)\n", codigo, porcentagem, totalQtd, FormatFloatBR(totalValor))
+			fiisDetalhes += fmt.Sprintf("  - %s (%.1f%%): %d cotas (R$ %s) | Preço médio: R$ %s\n", codigo, porcentagem, totalQtd, FormatFloatBR(totalValor), FormatFloatBR(CalcularPrecoMedioFII(fii)))
 		}
 	}
 
@@ -367,7 +367,8 @@ Lucro Líquido RF: R$ %s
 					totalValor += aporte.ValorTotal
 				}
 			}
-			fiisDetalhes += fmt.Sprintf("  - %s: %d cotas (R$ %s)\n", codigo, totalQtd, FormatFloatBR(totalValor))
+			precoMedio := CalcularPrecoMedioFII(fii)
+			fiisDetalhes += fmt.Sprintf("  - %s: %d cotas (R$ %s) | Preço médio: R$ %s\n", codigo, totalQtd, FormatFloatBR(totalValor), FormatFloatBR(precoMedio))
 		}
 	}
 	if fiisDetalhes != "" {

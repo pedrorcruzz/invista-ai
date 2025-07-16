@@ -1638,6 +1638,31 @@ func abs(f float64) float64 {
 func AjustarPrecoMedioFIIs(dados *Dados, scanner *bufio.Scanner) {
 	for {
 		ClearTerminal()
+		// Exibir FIIs e preços médios em uma caixinha antes das opções
+		fiisUnicos := make(map[string]*FII)
+		for _, ano := range dados.Anos {
+			for _, mes := range ano {
+				for i := range mes.FIIs {
+					codigo := mes.FIIs[i].Codigo
+					if _, existe := fiisUnicos[codigo]; !existe {
+						fiisUnicos[codigo] = &mes.FIIs[i]
+					}
+				}
+			}
+		}
+		if len(fiisUnicos) > 0 {
+			codigos := make([]string, 0, len(fiisUnicos))
+			for codigo := range fiisUnicos {
+				codigos = append(codigos, codigo)
+			}
+			sort.Strings(codigos)
+			caixa := []string{"FIIs disponíveis:"}
+			for _, codigo := range codigos {
+				precoMedio := CalcularPrecoMedioFII(*fiisUnicos[codigo])
+				caixa = append(caixa, fmt.Sprintf("%s (Preço Médio: R$ %.2f)", codigo, precoMedio))
+			}
+			PrintCaixa(caixa)
+		}
 		fmt.Println("╔══════════════════════════════════════════════════════╗")
 		fmt.Println("║              AJUSTE PREÇO MÉDIO FII                 ║")
 		fmt.Println("╠══════════════════════════════════════════════════════╣")
@@ -1681,9 +1706,9 @@ func AjustarPrecoMedioFIIs(dados *Dados, scanner *bufio.Scanner) {
 			}
 			sort.Strings(codigos)
 			caixa := []string{"FIIs disponíveis:"}
-			for i, codigo := range codigos {
+			for _, codigo := range codigos {
 				precoMedio := CalcularPrecoMedioFII(*fiisUnicos[codigo])
-				caixa = append(caixa, fmt.Sprintf("%d - %s (Preço Médio: R$ %.2f)", i+1, codigo, precoMedio))
+				caixa = append(caixa, fmt.Sprintf("%s (Preço Médio: R$ %.2f)", codigo, precoMedio))
 			}
 			PrintCaixa(caixa)
 			input := InputBox("Digite o número ou código do FII para ajustar:", scanner)
