@@ -219,22 +219,49 @@ func GetResumoTotalAcumuladoStr(dados Dados) string {
 			}
 		}
 
-		alertaDARF = fmt.Sprintf("\n⚠️  ATENÇÃO: Você tem DARF a pagar!\n   Total de DARF: R$ %s\n", FormatFloatBR(totalDARF))
-
-		// Adicionar detalhes por mês se houver mais de um mês com DARF
-		if len(darfPorMes) > 1 || (len(darfPorMes) == 1 && len(darfPorMes[OrdenarChaves(darfPorMes)[0]]) > 1) {
-			alertaDARF += "   Detalhes por mês:\n"
-			anos := OrdenarChaves(darfPorMes)
-			for _, ano := range anos {
-				meses := OrdenarChaves(darfPorMes[ano])
-				for _, mes := range meses {
-					darf := darfPorMes[ano][mes]
-					alertaDARF += fmt.Sprintf("   - %s/%s: R$ %s\n", NomeMes(mes), ano, FormatFloatBR(darf))
+		// Montar linhas para a caixinha
+		caixa := []string{"DARF A PAGAR"}
+		caixa = append(caixa, "")
+		caixa = append(caixa, fmt.Sprintf("Total de DARF: R$ %s", FormatFloatBR(totalDARF)))
+		caixa = append(caixa, "")
+		// Subcaixas por FII e data
+		detalhes := []string{}
+		for _, ano := range OrdenarChaves(dados.Anos) {
+			for _, mes := range OrdenarChaves(dados.Anos[ano]) {
+				m := dados.Anos[ano][mes]
+				for _, fii := range m.FIIs {
+					for _, venda := range fii.Vendas {
+						if venda.DARF > 0 {
+							// Calcular prazo: último dia do mês seguinte à venda
+							dataVenda, err := time.Parse("02/01/2006", venda.Data)
+							prazo := ""
+							if err == nil {
+								anoPrazo := dataVenda.Year()
+								mesPrazo := int(dataVenda.Month()) + 1
+								if mesPrazo > 12 {
+									mesPrazo = 1
+									anoPrazo++
+								}
+								// Último dia do mês seguinte
+								t := time.Date(anoPrazo, time.Month(mesPrazo)+1, 0, 0, 0, 0, 0, time.UTC)
+								prazo = t.Format("02/01/2006")
+							}
+							detalhes = append(detalhes, fmt.Sprintf("FII: %s | Venda: %s | Prazo DARF: %s | DARF: R$ %s", fii.Codigo, venda.Data, prazo, FormatFloatBR(venda.DARF)))
+						}
+					}
 				}
 			}
 		}
-
-		alertaDARF += "   💡 Prazo: até o último dia do mês seguinte\n"
+		if len(detalhes) > 0 {
+			caixa = append(caixa, "Detalhes por FII e data:")
+			caixa = append(caixa, detalhes...)
+		}
+		caixa = append(caixa, "")
+		caixa = append(caixa, "💡 Prazo: até o último dia do mês seguinte")
+		PrintCaixa(caixa)
+		alertaDARF = ""
+	} else {
+		PrintCaixa([]string{"DARF A PAGAR", "", "✅ Nenhum DARF a pagar!"})
 	}
 
 	// Cálculo do bloco [FIIs] global

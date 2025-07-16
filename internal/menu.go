@@ -347,7 +347,9 @@ func GerenciarFIIs(dados *Dados, scanner *bufio.Scanner) {
 		fmt.Println("║ 4. Ver FIIs conhecidos                              ║")
 		fmt.Println("║ 5. Ajustar valor da carteira                        ║")
 		fmt.Println("║ 6. Ajuste Preço Médio                               ║")
-		fmt.Println("║ 7. Voltar ao menu principal                         ║")
+		fmt.Println("║ 7. Pagar DARF                                       ║")
+		fmt.Println("║ 8. Histórico DARF                                   ║")
+		fmt.Println("║ 9. Voltar ao menu principal                         ║")
 		fmt.Println("╚══════════════════════════════════════════════════════╝")
 
 		opcao := InputBox("Escolha uma opção:", scanner)
@@ -365,6 +367,10 @@ func GerenciarFIIs(dados *Dados, scanner *bufio.Scanner) {
 		case "6":
 			AjustarPrecoMedioFIIs(dados, scanner)
 		case "7":
+			PagarDARF(dados, scanner)
+		case "8":
+			HistoricoDARF(dados, scanner)
+		case "9":
 			return
 		default:
 			fmt.Println("Opção inválida.")
@@ -1761,4 +1767,164 @@ func AjustarPrecoMedioFIIs(dados *Dados, scanner *bufio.Scanner) {
 			Pause(2000)
 		}
 	}
+}
+
+// No menu de FIIs, adicionar opção para pagar DARF
+func PagarDARF(dados *Dados, scanner *bufio.Scanner) {
+	// Coletar todas as vendas com DARF a pagar
+	type DARFInfo struct {
+		FII   *FII
+		Venda *FIIVenda
+		Prazo string
+	}
+	var darfList []DARFInfo
+	for _, ano := range OrdenarChaves(dados.Anos) {
+		for _, mes := range OrdenarChaves(dados.Anos[ano]) {
+			m := dados.Anos[ano][mes]
+			for i := range m.FIIs {
+				fii := &m.FIIs[i]
+				for j := range fii.Vendas {
+					venda := &fii.Vendas[j]
+					if venda.DARF > 0 {
+						dataVenda, err := time.Parse("02/01/2006", venda.Data)
+						prazo := ""
+						if err == nil {
+							anoPrazo := dataVenda.Year()
+							mesPrazo := int(dataVenda.Month()) + 1
+							if mesPrazo > 12 {
+								mesPrazo = 1
+								anoPrazo++
+							}
+							t := time.Date(anoPrazo, time.Month(mesPrazo)+1, 0, 0, 0, 0, 0, time.UTC)
+							prazo = t.Format("02/01/2006")
+						}
+						darfList = append(darfList, DARFInfo{fii, venda, prazo})
+					}
+				}
+			}
+		}
+	}
+	if len(darfList) == 0 {
+		PrintCaixa([]string{"DARF A PAGAR", "", "✅ Nenhum DARF a pagar!"})
+		Pause(2000)
+		return
+	}
+	// Exibir lista numerada
+	caixa := []string{"FIIs com DARF a pagar:"}
+	for i, info := range darfList {
+		caixa = append(caixa, fmt.Sprintf("%d - FII: %s | Venda: %s | Prazo DARF: %s | DARF: R$ %s", i+1, info.FII.Codigo, info.Venda.Data, info.Prazo, FormatFloatBR(info.Venda.DARF)))
+	}
+	caixa = append(caixa, "0 - Voltar ao menu")
+	PrintCaixa(caixa)
+	input := InputBox("Digite o número ou código do FII para marcar como pago:", scanner)
+	input = strings.TrimSpace(input)
+	if input == "0" {
+		return
+	}
+	var idx int = -1
+	if n, err := strconv.Atoi(input); err == nil && n >= 1 && n <= len(darfList) {
+		idx = n - 1
+	} else {
+		for i, info := range darfList {
+			if strings.EqualFold(info.FII.Codigo, input) {
+				idx = i
+				break
+			}
+		}
+	}
+	if idx == -1 {
+		PrintCaixa([]string{"Opção inválida."})
+		Pause(2000)
+		return
+	}
+	// Marcar como pago (zerar o valor do DARF)
+	darfList[idx].Venda.DARF = 0
+	PrintCaixa([]string{"DARF marcado como pago!"})
+	SalvarDados(*dados)
+	Pause(2000)
+}
+
+// Função para exibir histórico de DARF
+func HistoricoDARF(dados *Dados, scanner *bufio.Scanner) {
+	// Coletar anos com vendas
+	anosMap := make(map[string]bool)
+	for ano, meses := range dados.Anos {
+		for _, mes := range meses {
+			for _, fii := range mes.FIIs {
+				if len(fii.Vendas) > 0 {
+					anosMap[ano] = true
+				}
+			}
+		}
+	}
+	anos := make([]string, 0, len(anosMap))
+	for ano := range anosMap {
+		anos = append(anos, ano)
+	}
+	sort.Strings(anos)
+	if len(anos) == 0 {
+		PrintCaixa([]string{"Histórico DARF", "", "Nenhum registro encontrado."})
+		Pause(2000)
+		return
+	}
+	caixa := []string{"Anos com vendas de FIIs:"}
+	for i, ano := range anos {
+		caixa = append(caixa, fmt.Sprintf("%d - %s", i+1, ano))
+	}
+	caixa = append(caixa, "0 - Voltar ao menu")
+	PrintCaixa(caixa)
+	input := InputBox("Escolha o ano:", scanner)
+	input = strings.TrimSpace(input)
+	if input == "0" {
+		return
+	}
+	var anoEscolhido string
+	if n, err := strconv.Atoi(input); err == nil && n >= 1 && n <= len(anos) {
+		anoEscolhido = anos[n-1]
+	} else {
+		for _, ano := range anos {
+			if ano == input {
+				anoEscolhido = ano
+				break
+			}
+		}
+	}
+	if anoEscolhido == "" {
+		PrintCaixa([]string{"Ano inválido."})
+		Pause(2000)
+		return
+	}
+	// Coletar vendas do ano
+	pagos := []string{}
+	naoPagos := []string{}
+	for _, mes := range dados.Anos[anoEscolhido] {
+		for _, fii := range mes.FIIs {
+			for j := range fii.Vendas {
+				// venda := &fii.Vendas[j]
+				dataVenda, err := time.Parse("02/01/2006", fii.Vendas[j].Data)
+				prazo := ""
+				if err == nil {
+					anoPrazo := dataVenda.Year()
+					mesPrazo := int(dataVenda.Month()) + 1
+					if mesPrazo > 12 {
+						mesPrazo = 1
+						anoPrazo++
+					}
+					t := time.Date(anoPrazo, time.Month(mesPrazo)+1, 0, 0, 0, 0, 0, time.UTC)
+					prazo = t.Format("02/01/2006")
+				}
+				linha := fmt.Sprintf("FII: %s | Venda: %s | Prazo DARF: %s | DARF: R$ %s", fii.Codigo, fii.Vendas[j].Data, prazo, FormatFloatBR(fii.Vendas[j].DARF))
+				if fii.Vendas[j].DARF > 0 {
+					naoPagos = append(naoPagos, linha)
+				} else {
+					pagos = append(pagos, linha)
+				}
+			}
+		}
+	}
+	// Exibir caixas
+	PrintCaixa(append([]string{"DARF NÃO PAGOS", ""}, naoPagos...))
+	PrintCaixa(append([]string{"DARF PAGOS", ""}, pagos...))
+	Pause(0)
+	InputBox("Pressione Enter para voltar...", scanner)
 }
