@@ -355,7 +355,14 @@ Lucro Líquido RF: R$ %s
 	resumo += fmt.Sprintf("Carteira: R$ %s\n", FormatFloatBR(fiisCarteira))
 	// Calcular variacao do dia (carteira FIIs)
 	variacaoDia := fiisCarteira - fiisTotalInvestido
-	resumo += fmt.Sprintf("Variação (carteira FIIs): R$ %s\n", FormatFloatBR(variacaoDia))
+	// Adicionar sinal de + para valores positivos
+	var variacaoDiaStr string
+	if variacaoDia > 0 {
+		variacaoDiaStr = "+" + FormatFloatBR(variacaoDia)
+	} else {
+		variacaoDiaStr = FormatFloatBR(variacaoDia)
+	}
+	resumo += fmt.Sprintf("Variação (carteira FIIs): R$ %s\n", variacaoDiaStr)
 	// Linha de rendimento FIIs sozinha
 	linhaRendimento := fmt.Sprintf("[Rendimento FIIs: R$ %s]", FormatFloatBR(rendimentoFIIs))
 	resumo += linhaRendimento + "\n"
