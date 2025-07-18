@@ -352,17 +352,13 @@ Lucro Líquido RF: R$ %s
 	// [FIIs] bloco global
 	resumo += "[FIIs]\n"
 	resumo += fmt.Sprintf("Total Investido: R$ %s\n", FormatFloatBR(fiisTotalInvestido))
-	resumo += fmt.Sprintf("Carteira: R$ %s\n", FormatFloatBR(fiisCarteira))
-	// Calcular variacao do dia (carteira FIIs)
-	variacaoDia := fiisCarteira - fiisTotalInvestido
-	// Adicionar sinal de + para valores positivos
-	var variacaoDiaStr string
-	if variacaoDia > 0 {
-		variacaoDiaStr = "+" + FormatFloatBR(variacaoDia)
-	} else {
-		variacaoDiaStr = FormatFloatBR(variacaoDia)
+	carteiraFIIs := fiisTotalInvestido + dados.ValorAjusteFIIs
+	resumo += fmt.Sprintf("Carteira: R$ %s\n", FormatFloatBR(carteiraFIIs))
+	sinalAjuste := "+"
+	if dados.ValorAjusteFIIs < 0 {
+		sinalAjuste = "-"
 	}
-	resumo += fmt.Sprintf("Variação (carteira FIIs): R$ %s\n", variacaoDiaStr)
+	resumo += fmt.Sprintf("Lucro/Prejuízo: R$ %s%s\n", sinalAjuste, FormatFloatBR(abs(dados.ValorAjusteFIIs)))
 	// Linha de rendimento FIIs sozinha
 	linhaRendimento := fmt.Sprintf("[Rendimento FIIs: R$ %s]", FormatFloatBR(rendimentoFIIs))
 	resumo += linhaRendimento + "\n"
