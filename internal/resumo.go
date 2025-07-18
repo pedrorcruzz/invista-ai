@@ -3,6 +3,7 @@ package internal
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -205,63 +206,33 @@ func GetResumoTotalAcumuladoStr(dados Dados) string {
 	// Alerta de DARF
 	alertaDARF := ""
 	if totalDARF > 0 {
-		// Coletar detalhes por mês/ano
-		darfPorMes := make(map[string]map[string]float64) // ano -> mes -> valor
+		// Coletar detalhes por mês/ano para prazo
+		prazo := ""
 		for ano, mesesMap := range dados.Anos {
 			for mes, m := range mesesMap {
 				darfMes := CalcularDARFTotal(m.FIIs)
 				if darfMes > 0 {
-					if darfPorMes[ano] == nil {
-						darfPorMes[ano] = make(map[string]float64)
+					// Calcular prazo: último dia do mês seguinte
+					mesInt, _ := strconv.Atoi(mes)
+					anoInt, _ := strconv.Atoi(ano)
+					mesPrazo := mesInt + 1
+					anoPrazo := anoInt
+					if mesPrazo > 12 {
+						mesPrazo = 1
+						anoPrazo++
 					}
-					darfPorMes[ano][mes] = darfMes
+					t := time.Date(anoPrazo, time.Month(mesPrazo)+1, 0, 0, 0, 0, 0, time.UTC)
+					prazo = t.Format("02/01/2006")
 				}
 			}
 		}
-
-		// Montar linhas para a caixinha
-		caixa := []string{"DARF A PAGAR"}
-		caixa = append(caixa, "")
-		caixa = append(caixa, fmt.Sprintf("Total de DARF: R$ %s", FormatFloatBR(totalDARF)))
-		caixa = append(caixa, "")
-		// Subcaixas por FII e data
-		detalhes := []string{}
-		for _, ano := range OrdenarChaves(dados.Anos) {
-			for _, mes := range OrdenarChaves(dados.Anos[ano]) {
-				m := dados.Anos[ano][mes]
-				for _, fii := range m.FIIs {
-					for _, venda := range fii.Vendas {
-						if venda.DARF > 0 {
-							// Calcular prazo: último dia do mês seguinte à venda
-							dataVenda, err := time.Parse("02/01/2006", venda.Data)
-							prazo := ""
-							if err == nil {
-								anoPrazo := dataVenda.Year()
-								mesPrazo := int(dataVenda.Month()) + 1
-								if mesPrazo > 12 {
-									mesPrazo = 1
-									anoPrazo++
-								}
-								// Último dia do mês seguinte
-								t := time.Date(anoPrazo, time.Month(mesPrazo)+1, 0, 0, 0, 0, 0, time.UTC)
-								prazo = t.Format("02/01/2006")
-							}
-							detalhes = append(detalhes, fmt.Sprintf("FII: %s | Venda: %s | Prazo DARF: %s | DARF: R$ %s", fii.Codigo, venda.Data, prazo, FormatFloatBR(venda.DARF)))
-						}
-					}
-				}
-			}
-		}
-		if len(detalhes) > 0 {
-			caixa = append(caixa, "Detalhes por FII e data:")
-			caixa = append(caixa, detalhes...)
-		}
-		caixa = append(caixa, "")
-		caixa = append(caixa, "💡 Prazo: até o último dia do mês seguinte")
-		PrintCaixa(caixa)
-		alertaDARF = ""
+		alertaDARF = "\n╔════════════════════════════════════════════════════╗\n" +
+			"║  ⚠️  DARF a pagar: R$ " + FormatFloatBR(totalDARF) + " até " + prazo + "         ║\n" +
+			"╚════════════════════════════════════════════════════╝\n"
 	} else {
-		PrintCaixa([]string{"DARF A PAGAR", "", "✅ Nenhum DARF a pagar!"})
+		alertaDARF = "\n╔════════════════════════════════════════════════════╗\n" +
+			"║  ✅ Nenhum DARF a pagar!                           ║\n" +
+			"╚════════════════════════════════════════════════════╝\n"
 	}
 
 	// Cálculo do bloco [FIIs] global
@@ -315,7 +286,7 @@ func GetResumoTotalAcumuladoStr(dados Dados) string {
 
 	// Montar o resumo principal sem bug de formatação
 	var resumo string
-	resumo = fmt.Sprintf(`================== InvistAI ==================%s
+	resumo = fmt.Sprintf(`================== InvistAI ==================
 
 --- Total Investido ---
 
@@ -343,7 +314,6 @@ Lucro Líquido RF: R$ %s
 ---------------------------------------
 
 `,
-		alertaDARF,
 		FormatFloatBR(totalAportadoBruto), percRFBruto, FormatFloatBR(ultimoBrutoFinal), percFIIsBruto, FormatFloatBR(fiisBruto),
 		FormatFloatBR(totalAportadoLiquido), percRFLiquido, FormatFloatBR(rfLiquido), percFIIsLiquido, FormatFloatBR(fiisLiquido),
 		FormatFloatBR(ultimoBrutoFinal), FormatFloatBR(ultimoLiquidoFinal), FormatFloatBR(lucrosRetiradosTotal), FormatFloatBR(lucroBrutoTotal),
@@ -380,9 +350,7 @@ Lucro Líquido RF: R$ %s
 	if fiisResumo != "" {
 		resumo += fiisResumo
 	}
-	// Adiciona uma linha em branco antes do bloco detalhado
 	resumo += "\n"
-	// [FIIs Detalhados] bloco global
 	fiisDetalhes = ""
 	if len(todosFIIs) > 0 {
 		fiisDetalhes = "[FIIs Detalhados]\n"
@@ -405,8 +373,9 @@ Lucro Líquido RF: R$ %s
 		resumo += fiisDetalhes
 	}
 
+	resumo += alertaDARF
 	resumo += fmt.Sprintf(`
----------------------------------------
+------------------------------------------------------
 
 ╔════════════════════════════════════════════════════╗
 ║  Lucro Total Bruto (RF + FIIs): R$ %s           ║
