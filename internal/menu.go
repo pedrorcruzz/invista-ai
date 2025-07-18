@@ -1567,7 +1567,7 @@ func MostrarEEditarTotalInvestidoFIIs(dados *Dados, scanner *bufio.Scanner) {
 
 	for {
 		caixa := []string{
-			fmt.Sprintf("Valor total investido: R$ %s", FormatFloatBR(totalInvestido+ajuste)),
+			fmt.Sprintf("Carteira: R$ %s", FormatFloatBR(totalInvestido+ajuste)),
 		}
 		sinal := "+"
 		if ajuste < 0 {
@@ -1592,7 +1592,7 @@ func MostrarEEditarTotalInvestidoFIIs(dados *Dados, scanner *bufio.Scanner) {
 			dados.ValorAjusteFIIs += valor
 			SalvarDados(*dados)
 			ajuste = dados.ValorAjusteFIIs
-			PrintCaixa([]string{fmt.Sprintf("Novo valor total investido (com lucro): R$ %s", FormatFloatBR(totalInvestido+ajuste))})
+			PrintCaixa([]string{fmt.Sprintf("Novo valor da carteira (com lucro): R$ %s", FormatFloatBR(totalInvestido+ajuste))})
 			Pause(2000)
 		case "2":
 			valorStr := InputBox("Digite o valor do prejuízo:", scanner)
@@ -1608,7 +1608,7 @@ func MostrarEEditarTotalInvestidoFIIs(dados *Dados, scanner *bufio.Scanner) {
 			}
 			SalvarDados(*dados)
 			ajuste = dados.ValorAjusteFIIs
-			PrintCaixa([]string{fmt.Sprintf("Novo valor total investido (com prejuízo): R$ %s", FormatFloatBR(totalInvestido+ajuste))})
+			PrintCaixa([]string{fmt.Sprintf("Novo valor da carteira (com prejuízo): R$ %s", FormatFloatBR(totalInvestido+ajuste))})
 			Pause(2000)
 		case "3":
 			valorStr := InputBox("Digite o valor manual:", scanner)
@@ -1621,7 +1621,7 @@ func MostrarEEditarTotalInvestidoFIIs(dados *Dados, scanner *bufio.Scanner) {
 			dados.ValorAjusteFIIs = valor - totalInvestido
 			SalvarDados(*dados)
 			ajuste = dados.ValorAjusteFIIs
-			PrintCaixa([]string{fmt.Sprintf("Novo valor total investido (manual): R$ %s", FormatFloatBR(totalInvestido+ajuste))})
+			PrintCaixa([]string{fmt.Sprintf("Novo valor da carteira (manual): R$ %s", FormatFloatBR(totalInvestido+ajuste))})
 			Pause(2000)
 		case "4":
 			return
