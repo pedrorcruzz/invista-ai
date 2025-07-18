@@ -396,7 +396,7 @@ func GerenciarFIIsMes(dados *Dados, scanner *bufio.Scanner) {
 	for {
 		ClearTerminal()
 		fmt.Printf("╔══════════════════════════════════════════════════════╗\n")
-		fmt.Printf("║                FIIs - %s/%s                        ║\n", NomeMes(mes), ano)
+		fmt.Printf("║                FIIs - %s/%s                             ║\n", NomeMes(mes), ano)
 		fmt.Printf("╠══════════════════════════════════════════════════════╣\n")
 		fmt.Printf("║ 1. Adicionar FII                                    ║\n")
 		fmt.Printf("║ 2. Editar FII                                       ║\n")

@@ -3,7 +3,6 @@ package internal
 import (
 	"fmt"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -205,35 +204,35 @@ func GetResumoTotalAcumuladoStr(dados Dados) string {
 
 	// Alerta de DARF
 	alertaDARF := ""
-	if totalDARF > 0 {
-		// Coletar detalhes por mês/ano para prazo
-		prazo := ""
-		for ano, mesesMap := range dados.Anos {
-			for mes, m := range mesesMap {
-				darfMes := CalcularDARFTotal(m.FIIs)
-				if darfMes > 0 {
-					// Calcular prazo: último dia do mês seguinte
-					mesInt, _ := strconv.Atoi(mes)
-					anoInt, _ := strconv.Atoi(ano)
-					mesPrazo := mesInt + 1
-					anoPrazo := anoInt
-					if mesPrazo > 12 {
-						mesPrazo = 1
-						anoPrazo++
-					}
-					t := time.Date(anoPrazo, time.Month(mesPrazo)+1, 0, 0, 0, 0, 0, time.UTC)
-					prazo = t.Format("02/01/2006")
-				}
-			}
-		}
-		alertaDARF = "\n╔════════════════════════════════════════════════════╗\n" +
-			"║  ⚠️  DARF a pagar: R$ " + FormatFloatBR(totalDARF) + " até " + prazo + "         ║\n" +
-			"╚════════════════════════════════════════════════════╝\n"
-	} else {
-		alertaDARF = "\n╔════════════════════════════════════════════════════╗\n" +
-			"║  ✅ Nenhum DARF a pagar!                           ║\n" +
-			"╚════════════════════════════════════════════════════╝\n"
-	}
+	// if totalDARF > 0 {
+	// 	// Coletar detalhes por mês/ano para prazo
+	// 	prazo := ""
+	// 	for ano, mesesMap := range dados.Anos {
+	// 		for mes, m := range mesesMap {
+	// 			darfMes := CalcularDARFTotal(m.FIIs)
+	// 			if darfMes > 0 {
+	// 				// Calcular prazo: último dia do mês seguinte
+	// 				mesInt, _ := strconv.Atoi(mes)
+	// 				anoInt, _ := strconv.Atoi(ano)
+	// 				mesPrazo := mesInt + 1
+	// 				anoPrazo := anoInt
+	// 				if mesPrazo > 12 {
+	// 					mesPrazo = 1
+	// 					anoPrazo++
+	// 				}
+	// 				t := time.Date(anoPrazo, time.Month(mesPrazo)+1, 0, 0, 0, 0, 0, time.UTC)
+	// 				prazo = t.Format("02/01/2006")
+	// 			}
+	// 		}
+	// 	}
+	// 	alertaDARF = "\n╔════════════════════════════════════════════════════╗\n" +
+	// 		"║  ⚠️  DARF a pagar: R$ " + FormatFloatBR(totalDARF) + " até " + prazo + "         ║\n" +
+	// 		"╚════════════════════════════════════════════════════╝\n"
+	// } else {
+	// 	alertaDARF = "\n╔════════════════════════════════════════════════════╗\n" +
+	// 		"║  ✅ Nenhum DARF a pagar!                           ║\n" +
+	// 		"╚════════════════════════════════════════════════════╝\n"
+	// }
 
 	// Cálculo do bloco [FIIs] global
 	fiisTotalInvestido := 0.0
