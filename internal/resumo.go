@@ -808,8 +808,8 @@ func MostrarResumoAno(dados Dados, ano string) {
 	fmt.Println("---------------------------------------")
 	fmt.Println()
 	fmt.Println("╔════════════════════════════════════════════════════╗")
-	fmt.Printf("║  Lucro Total Bruto (RF + FIIs): R$ %s           ║\n", FormatFloatBR(lucroBrutoTotalAcumulado))
-	fmt.Printf("║  Lucro Total Líquido (RF + FIIs): R$ %s           ║\n", FormatFloatBR(lucroMesLiquidoTotalAcumulado))
+	fmt.Printf("║  Lucro Total Bruto (RF + FIIs): R$ %s          ║\n", FormatFloatBR(lucroBrutoTotalAcumulado))
+	fmt.Printf("║  Lucro Total Líquido (RF + FIIs): R$ %s         ║\n", FormatFloatBR(lucroMesLiquidoTotalAcumulado))
 	fmt.Println("╚════════════════════════════════════════════════════╝")
 	return
 }
