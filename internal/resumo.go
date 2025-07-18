@@ -378,8 +378,8 @@ Lucro Líquido RF: R$ %s
 ------------------------------------------------------
 
 ╔════════════════════════════════════════════════════╗
-║  Lucro Total Bruto (RF + FIIs): R$ %s           ║
-║  Lucro Total Líquido (RF + FIIs): R$ %s           ║
+║  Lucro Total Bruto (RF + FIIs): R$ %s          ║
+║  Lucro Total Líquido (RF + FIIs): R$ %s         ║
 ╚════════════════════════════════════════════════════╝
 `,
 		FormatFloatBR(lucroBrutoTotalAcumulado),
